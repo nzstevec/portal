@@ -1,0 +1,10 @@
+Flask==3.0.3
+Flask-CORS==5.0.0
+# Werkzeug==2.2.2
+openai
+pyjwt
+pyjwt[crypto]
+cachetools
+python-dotenv
+boto3
+pydantic

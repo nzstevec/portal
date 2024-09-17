@@ -1,0 +1,9 @@
+POST http://localhost:5000/api/feedback
+Content-Type: application/json
+
+{
+    "created": "2022-01-01T00:00:00",
+    "category": "Feature Request", 
+    "feedback": "Looks good to me",
+    "email": "john.doe@example.com"
+}
