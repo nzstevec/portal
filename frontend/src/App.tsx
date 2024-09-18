@@ -8,6 +8,7 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
 import Feedback from './pages/Feedback';
+import DocAnalyst from './pages/DocAnalyst';
 
 // Styled components
 const AppContainer = styled.div`
@@ -83,13 +84,16 @@ const AppInner: React.FC = () => {
               <NavLink to="/" isActive={location.pathname === '/'}>User Notes</NavLink>
             </NavItem>
             <NavItem>
-              <NavLink to="/about" isActive={location.pathname === '/about'}>About</NavLink>
+              <NavLink to="/doc-analyst" isActive={location.pathname === '/doc-analyst'}>Doc Analyst 𝞫</NavLink>
             </NavItem>
             <NavItem>
               <NavLink to="/services" isActive={location.pathname === '/services'}>Services</NavLink>
             </NavItem>
             <NavItem>
               <NavLink to="/contact" isActive={location.pathname === '/contact'}>Contact</NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink to="/about" isActive={location.pathname === '/about'}>About</NavLink>
             </NavItem>
             <NavItem>
               <NavLink to="/feedback" isActive={location.pathname === '/feedback'}>Feedback</NavLink>
@@ -101,59 +105,23 @@ const AppInner: React.FC = () => {
           <MainContent>
             <Routes>
               <Route path="/" element={<UserNotes />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/doc-analyst" element={<DocAnalyst />} />
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
               <Route path="/feedback" element={<Feedback />} />
             </Routes>
           </MainContent>
         </Content>
-        <StatusBar>Status: Online | © 2024 Your Company Name</StatusBar>
+        <StatusBar>Status: Online | © 2024 SCOTi Sandbox</StatusBar>
       </AppContainer>
   );
 }
 
 const App: React.FC = () => {
-
-  
-
   return (
     <Router>
       <AppInner />
-      {/* <AppContainer>
-        <Navbar>
-          <NavList>
-            <NavItem>
-              <NavLink to="/" isActive={location.pathname === '/'}>User Notes</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/about" isActive={location.pathname === '/about'}>About</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/services" isActive={location.pathname === '/services'}>Services</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/contact" isActive={location.pathname === '/contact'}>Contact</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/feedback" isActive={location.pathname === '/feedback'}>Feedback</NavLink>
-            </NavItem>
-          </NavList>
-        </Navbar>
-        <Content>
-          <Sidebar></Sidebar>
-          <MainContent>
-            <Routes>
-              <Route path="/" element={<UserNotes />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/feedback" element={<Feedback />} />
-            </Routes>
-          </MainContent>
-        </Content>
-        <StatusBar>Status: Online | © 2024 Your Company Name</StatusBar>
-      </AppContainer> */}
     </Router>
   );
 };

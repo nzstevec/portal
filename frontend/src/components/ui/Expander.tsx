@@ -6,6 +6,8 @@ const ExpanderContainer = styled.div`
     border-radius: 4px;
     padding: 16px;
     margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.8;
 `;
 
 const ExpanderButton = styled.button`
@@ -16,7 +18,7 @@ const ExpanderButton = styled.button`
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   font-style: italic;
   cursor: pointer;
@@ -47,7 +49,7 @@ const Expander: React.FC<ExpanderProps> = ({ title, initialyExpanded, children }
     <ExpanderContainer>
       <ExpanderButton onClick={handleToggle}>
             <div style={{ justifySelf: 'start'}}>{title}</div>
-            <div>{expanded ? '˅' : '˄'}</div>
+            <div>{expanded ? '˄' : '˅'}</div>
       </ExpanderButton>
       {expanded && <div>{children}</div>}
     </ExpanderContainer>

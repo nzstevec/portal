@@ -46,7 +46,7 @@ h.	To start again with a different document to audit, select the radio button in
 `
 
 const UserNotesContainer = styled.div`
-  padding: 20px;
+  padding: 20px 80px;
 `;
 
 const UserNotes: React.FC = () => (

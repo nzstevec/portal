@@ -1,0 +1,394 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: template for cluster and container of the dev portal
+
+Parameters:
+
+# The following 3 parameters need to be changed for a new environment
+  EcsClusterName:
+    Type: String
+    Description: Name of ECS Cluster stack to build off of
+    Default: dev-ecs-cluster
+
+  Image:
+    Type: String
+    Default: stevechapman/portal
+
+  ImageVersion:
+    Type: String
+    Default: 0.1.GitHash #please not change the GitHash stringis will be replaced by the githas value in codebuild.
+
+  LegalNlpImage:
+    Type: String
+    Default: stevechapman/legal_nlp:1.15
+
+  DocEditorImage:
+    Type: String
+    Default: stevechapman/doc-editor:1.3
+
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Description: service environment of this stack of resources
+
+# The following 2 parameters do not need to be changed for a new environment
+  PortalSecrets:
+    Type: String
+    Default: "dev_portal_secrets"
+
+  VpcStack:
+    Type: String
+    Description: Name of VPC stack to build off of
+    Default: vpc-stack
+
+# TODO - create domain and certificate
+  DevPortalScotiAuCertificate:
+    Type: String
+    Description: ARN of certificate for dev-portal.scoti.au
+    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/6a009c30-acd7-4c34-8dfd-24323f611b14
+
+  PortalScotiAuCertificate:
+    Type: String
+    Description: ARN of certificate for portal.scoti.au
+    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/762f52df-49aa-43a8-b710-9d4f2f1e84e7
+
+  EntityScotiAuCertificate:
+    Type: String
+    Description: ARN of certificate for entity.scoti.au
+    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/962a2102-44e9-4c91-8def-a1314268e529
+
+  DocEditorScotiAuCertificate:
+    Type: String
+    Description: ARN of certificate for doc-editor.scoti.au
+    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/387a1a93-a382-4a01-8df9-ac15610be658
+
+
+Resources:
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: 
+      - EcsCluster
+      - DefaultSecurityGroup
+    Properties:
+      # Name: !Join [ '', [ !Ref EcsClusterName, -elb ] ]
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref DefaultSecurityGroup
+      Subnets:
+        - Fn::ImportValue: !Sub ${VpcStack}-public-subnet-a-id
+        - Fn::ImportValue: !Sub ${VpcStack}-public-subnet-b-id
+      Type: application
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn:
+      - ApplicationLoadBalancer
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPort: 8080
+      HealthCheckProtocol: HTTP
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStack}-vpc-id
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Order: 1
+          Type: "redirect"
+          RedirectConfig:
+            Path: "/#{path}"
+            Host: "garibweb.shangarpawar.com"
+            Query: "#{query}"
+            Protocol: "HTTPS"
+            StatusCode: "HTTP_301"
+            Port: "443"
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  ListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
+      DefaultActions:
+      - Order: 1
+        AuthenticateCognitoConfig:
+          OnUnauthenticatedRequest: "authenticate"
+          UserPoolClientId: "4c30m5pgir5h32o186t48dln2p"
+          UserPoolDomain: "garib"
+          SessionTimeout: "1800"
+          Scope: "openid"
+          SessionCookieName: "AWSELBAuthSessionCookie"
+          UserPoolArn: "arn:aws:cognito-idp:ap-southeast-2:058264164905:userpool/ap-southeast-2_7SEHafDKv"
+          AuthenticationRequestExtraParams: {}
+        Type: "authenticate-cognito"
+      - Order: 2
+        TargetGroupArn: !Ref TargetGroup
+        Type: "forward"
+        ForwardConfig:
+          TargetGroupStickinessConfig:
+            Enabled: false
+            DurationSeconds: 3600
+          TargetGroups:
+          - TargetGroupArn: !Ref TargetGroup
+            Weight: 1
+      LoadBalancerArn: !Ref ApplicationLoadBalancer 
+      Port: 443
+      Certificates:
+      - CertificateArn: !Ref DevPortalScotiAuCertificate
+      Protocol: HTTPS
+
+  FargateService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - Listener
+      - ListenerHTTPS
+    Properties:
+      Cluster: !Ref EcsCluster
+      DeploymentController:
+        Type: ECS
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        -
+          ContainerName: portal
+          ContainerPort: 8080
+          TargetGroupArn: !Ref TargetGroup
+      NetworkConfiguration:
+          AwsvpcConfiguration:
+            SecurityGroups:
+              -
+                !Ref DefaultSecurityGroup
+            Subnets:
+              -
+                Fn::ImportValue: !Sub ${VpcStack}-private-subnet-a-id
+              -
+                Fn::ImportValue: !Sub ${VpcStack}-private-subnet-b-id
+      TaskDefinition: !Ref FargateServiceTaskDefinition
+
+  FargateServiceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+
+  FargateServiceTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        -
+          Name: portal
+          Essential: true
+          Image: !Join [ ':', [ !Ref Image, !Ref ImageVersion ] ]
+          Environment:
+            - Name: PORTAL_SECRETS
+              Value: !Ref PortalSecrets
+            - Name: AWS_ENV
+              Value: !Ref Env
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: HUGGING_FACE_HUB_TOKEN
+              Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:hugging_face_hub_token}}"
+          LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: !Ref FargateServiceLogGroup
+                awslogs-stream-prefix: portal-container
+                awslogs-region: !Ref AWS::Region
+          PortMappings:
+            -
+              ContainerPort: 8080
+              HostPort: 8080
+              Protocol: tcp
+        # -
+        #   Name: legal-nlp
+        #   Essential: false
+        #   Image: !Ref LegalNlpImage
+        #   Environment:
+        #     - Name: PORTAL_SECRETS
+        #       Value: !Ref PortalSecrets
+        #     - Name: AWS_ENV
+        #       Value: !Ref Env
+        #     - Name: FEEDBACK_LOG_GROUP
+        #       Value: !Join [ '', [ !Ref EcsClusterName, -Feedback ] ]
+        #     - Name: FEEDBACK_LOG_STREAM
+        #       Value: !Join [ '', [ !Ref EcsClusterName, -Feedback-logstream ] ]
+        #     - Name: AWS_REGION
+        #       Value: !Ref AWS::Region
+        #     - Name: HUGGING_FACE_HUB_TOKEN
+        #       Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:hugging_face_hub_token}}"
+        #     - Name: RUNPOD_BEARER_TOKEN
+        #       Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:runpod_bearer_token}}"
+        #   LogConfiguration:
+        #       LogDriver: awslogs
+        #       Options:
+        #         awslogs-group: !Ref FargateServiceLogGroup
+        #         awslogs-stream-prefix: legal-nlp-container
+        #         awslogs-region: !Ref AWS::Region
+        #   PortMappings:
+        #     -
+        #       ContainerPort: 8501
+        #       HostPort: 8501
+        #       Protocol: tcp
+      Cpu: '256'
+      ExecutionRoleArn: !Ref DefaultRole
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        -  FARGATE
+      TaskRoleArn: !Ref TaskRole
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'TaskRolePolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:ListSecrets
+                  - secretsmanager:DescribeSecret
+                Resource: [
+                  !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${PortalSecrets}-??????"
+                ]
+              - Effect: Allow
+                Action:
+                  - "logs:GetLogEvents"
+                  - "logs:PutLogEvents"
+                Resource: [ "*" ]
+
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref EcsClusterName
+
+  DefaultSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStack}-vpc-id
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8080
+        ToPort: 8080
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8501
+        ToPort: 8501
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 8542
+        ToPort: 8542
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 2234
+        ToPort: 2234
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 2235
+        ToPort: 2235
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 3000
+        ToPort: 3000
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 22
+      #   ToPort: 22
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 80
+      #   ToPort: 80
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 587
+      #   ToPort: 587
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 8080
+      #   ToPort: 8080
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 8501
+      #   ToPort: 8501
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 8542
+      #   ToPort: 8542
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 2234
+      #   ToPort: 2234
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 2235
+      #   ToPort: 2235
+      #   CidrIp: 0.0.0.0/0
+      # - IpProtocol: tcp
+      #   FromPort: 443
+      #   ToPort: 443
+      #   CidrIp: 0.0.0.0/0
+
+  DefaultRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - ec2.amazonaws.com
+              - ecs.amazonaws.com
+              - ecs-tasks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+          # - Effect: Allow
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonECS_FullAccess
+
+
+# Outputs:
+#   FargateServiceName:
+#     Description: A reference to the created Fargate Service
+#     Value: !GetAtt FargateService.Name
+#     Export:
+#       Name: !Sub ${AWS::StackName}-fargate-service-name
