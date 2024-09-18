@@ -45,10 +45,10 @@ Parameters:
     Default: vpc-stack
 
 # TODO - create domain and certificate
-  DevPortalScotiAuCertificate:
+  NextScotiAuCertificate:
     Type: String
     Description: ARN of certificate for dev-portal.scoti.au
-    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/6a009c30-acd7-4c34-8dfd-24323f611b14
+    Default: arn:aws:acm:ap-southeast-2:058264164905:certificate/2f49c6fa-26dd-4db0-8931-9182d5eabddc
 
   PortalScotiAuCertificate:
     Type: String
@@ -144,7 +144,7 @@ Resources:
       LoadBalancerArn: !Ref ApplicationLoadBalancer 
       Port: 443
       Certificates:
-      - CertificateArn: !Ref DevPortalScotiAuCertificate
+      - CertificateArn: !Ref NextScotiAuCertificate
       Protocol: HTTPS
 
   FargateService:
