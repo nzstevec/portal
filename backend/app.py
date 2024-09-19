@@ -5,11 +5,18 @@ from flask_cors import CORS
 from pydantic import ValidationError
 import os
 from datetime import datetime
+import logging
 
 from config import Config
 from authorizer import check_auth_token
 from model.feedback import CreateFeedbackRequest, CreateFeedbackResponse
 from service.smtp_client import SmtpClient
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='../frontend/build')
 app.config.from_object(Config)
@@ -19,6 +26,8 @@ smtp_client = SmtpClient(app.config)
 @app.route('/api/feedback', methods=['POST'])
 @check_auth_token
 def feedback(*args, **kw):
+    logger.info(f"/api/feedback called with headers {request.headers}")
+    logger.info(f"/api/feedback called with body: {request.json}")
     iso_string = datetime.now().isoformat()
     if kw["auth_error"] is not None:
         print(f"Error: {kw['auth_error']}")

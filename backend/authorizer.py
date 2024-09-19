@@ -1,12 +1,20 @@
 import json
 import os
 import traceback
+import logging
 
 import boto3
 import jwt
 from jwt import PyJWKClient
 from cachetools import TTLCache
 from flask import request
+
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 REGION = "ap-southeast-2"
 USERPOOLID = "ap-southeast-2_7SEHafDKv"
@@ -41,12 +49,17 @@ AUTH_ERROR = 'auth_error'
 def check_auth_token(f):
     def wrapper(*args, **kw):
         try:
+            logger.info(f"Checking auth token")
             headers = request.headers
+            logger.info(f"Headers: {headers}")
             if HEADER_AUTH_TOKEN in headers:
+                logger.info(f"Token[X-Amzn-Oidc-Data]: {headers[HEADER_AUTH_TOKEN]}")
                 token = headers[HEADER_AUTH_TOKEN].replace("Bearer ", "")
             elif HEADER_ACCESS_TOKEN in headers:
+                logger.info(f"Token[X-Amzn-Oidc-Accesstoken]: {headers[HEADER_ACCESS_TOKEN]}")
                 token = headers[HEADER_ACCESS_TOKEN].replace("Bearer ", "")
             else:
+                logger.info(f"No token provided")
                 kw[AUTH_ERROR] = "No token provided"
                 return f(*args, **kw)
             if jwt_client.is_token_in_cache(token):
