@@ -16,6 +16,8 @@ phases:
     commands:
       - ENVIRONMENT="${env}"
       - echo "ENVIRONMENT is $ENVIRONMENT"
+      - echo "lets fail fast - debugging permission error for reading secrets"
+      - SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id dev_portal_secrets --query SecretString --output text)
       # - |
       #   if [ "$ENVIRONMENT" == "dev" ]; then
       #     cp cloudformation/dev-portal.yml template.yml
