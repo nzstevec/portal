@@ -269,7 +269,8 @@ Resources:
                   - secretsmanager:ListSecrets
                   - secretsmanager:DescribeSecret
                 Resource: [
-                  !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${PortalSecrets}-??????"
+                  "*"
+                  # !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${PortalSecrets}-??????"
                 ]
               - Effect: Allow
                 Action:
