@@ -52,6 +52,7 @@ def get_secrets(secret_name: str) -> Secrets:
                      secret_name, e.response['Error']['Code'])
         raise e
 
+    logger.info(f"Got secret {secret_name} with value {get_secret_value_response['SecretString']}")
     secret = get_secret_value_response['SecretString']
     return Secrets(**json.loads(secret))
 
@@ -69,7 +70,9 @@ def load_environment_variable(key: str, default: str = None) -> str:
 
     if "PORTAL_SECRETS" in os.environ:
         secret_name = os.environ.get("PORTAL_SECRETS")
+        logger.info(f"Loading secrets from {secret_name} in Secrets Manager")
         secrets = get_secrets(secret_name)
+        logger.info(f"Loaded secrets from {secret_name} in Secrets Manager, got {secrets}")
         os.environ['PORTAL_ALB_HEADER'] = secrets.portal_alb_header
         # os.environ['RUNPOD_POD_ID'] = secrets.runpod_pod_id
         os.environ['DOC_ANALYST_RUNPOD_POD_ID'] = secrets.doc_analyst_runpod_pod_id
