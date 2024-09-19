@@ -16,7 +16,7 @@ COPY backend/ .
 COPY frontend/build ../frontend/build
 
 # Expose the port the application will run on
-EXPOSE 5000
+EXPOSE 8080
 
 # Run the command to start the Flask development server
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]

@@ -198,6 +198,8 @@ Resources:
               Value: !Ref AWS::Region
             - Name: HUGGING_FACE_HUB_TOKEN
               Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:hugging_face_hub_token}}"
+            - Name: PORTAL_SECRETS
+              Value: 8080
           LogConfiguration:
               LogDriver: awslogs
               Options:
