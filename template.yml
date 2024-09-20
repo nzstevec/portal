@@ -149,7 +149,7 @@ Resources:
   FargateService:
     Type: AWS::ECS::Service
     DependsOn:
-      - Listener
+      # - Listener
       - ListenerHTTPS
     Properties:
       Cluster: !Ref EcsCluster
