@@ -110,7 +110,7 @@ def load_environment_variables() -> None:
         os.environ['SMTP_PASSWORD'] = secrets.SMTP_PASSWORD
         os.environ['SMTP_USE_TLS'] = secrets.SMTP_USE_TLS
         os.environ['DESTINATION_EMAIL'] = secrets.DESTINATION_EMAIL
-        os.environ['SOURCE_EMAIL'] = secrets.M
+        os.environ['SOURCE_EMAIL'] = secrets.SOURCE_EMAIL
         os.environ['SECRET_KEY'] = secrets.SECRET_KEY
 
         logger.info("Loaded secrets from AWS Secrets Manager")
