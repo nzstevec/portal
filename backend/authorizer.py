@@ -51,29 +51,33 @@ def check_auth_token(f):
         try:
             logger.info(f"Checking auth token")
             headers = request.headers
-            logger.info(f"Headers: {headers}")
-            if HEADER_AUTH_TOKEN in headers:
-                logger.info(f"Token[X-Amzn-Oidc-Data]: {headers[HEADER_AUTH_TOKEN]}")
-                token = headers[HEADER_AUTH_TOKEN].replace("Bearer ", "")
-            elif HEADER_ACCESS_TOKEN in headers:
-                logger.info(f"Token[X-Amzn-Oidc-Accesstoken]: {headers[HEADER_ACCESS_TOKEN]}")
-                token = headers[HEADER_ACCESS_TOKEN].replace("Bearer ", "")
-            else:
+            # logger.info(f"Headers: {headers}")
+            if HEADER_AUTH_TOKEN not in headers and HEADER_ACCESS_TOKEN not in headers:
                 logger.info(f"No token provided")
                 kw[AUTH_ERROR] = "No token provided"
                 return f(*args, **kw)
-            if jwt_client.is_token_in_cache(token):
-                print("Token in cache")
-                return f(*args, **kw)            
-            signing_key = get_jwt_signing_key(token)
-            data = jwt.decode(
-                token,
-                signing_key.key,
-                algorithms=["RS256"],
-                audience=os.environ['JWT_AUDIENCE'],
-                options={"verify_exp": validation}, )
-            jwt_client.put_token_in_cache(token)
-            print("token put in cache")
+            if HEADER_AUTH_TOKEN in headers:
+                # logger.info(f"Token[X-Amzn-Oidc-Data]: {headers[HEADER_AUTH_TOKEN]}")
+                token = headers[HEADER_AUTH_TOKEN].replace("Bearer ", "")
+                jwt_data = jwt.decode(token, options={"verify_signature": False})
+                username = jwt_data.get("username")
+                given_name = jwt_data.get("given_name")
+                family_name = jwt_data.get("family_name")
+                email = jwt_data.get("email")
+            if HEADER_ACCESS_TOKEN in headers:
+                # logger.info(f"Token[X-Amzn-Oidc-Accesstoken]: {headers[HEADER_ACCESS_TOKEN]}")
+                token = headers[HEADER_ACCESS_TOKEN].replace("Bearer ", "")
+                jwt_data = jwt.decode(token, options={"verify_signature": False})
+                cognito_groups = jwt_data.get("cognito:groups", [])
+                roles = ", ".join(cognito_groups)
+
+            kw.update({
+                "username": username,
+                "given_name": given_name,
+                "family_name": family_name,
+                "email": email,
+                "roles": roles
+            })
         except Exception as e:
             kw[AUTH_ERROR] = e
         return f(*args, **kw)
