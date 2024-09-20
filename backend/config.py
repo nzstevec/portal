@@ -16,16 +16,31 @@ logger = logging.getLogger(__name__)
 
 
 class Secrets(BaseModel):
-    portal_alb_header: str
-    doc_analyst_runpod_pod_id: str
-    runpod_bearer_token: str
-    openai_api_key: str
-    cognito_pool_id: str
-    cognito_app_client_id: str
-    cognito_app_client_secret: str
-    hugging_face_hub_token: str
-    smtp_user: str
-    smtp_pw: str
+    # portal_alb_header: str
+    # doc_analyst_runpod_pod_id: str
+    # runpod_bearer_token: str
+    # openai_api_key: str
+    # cognito_pool_id: str
+    # cognito_app_client_id: str
+    # cognito_app_client_secret: str
+    # hugging_face_hub_token: str
+    # smtp_user: str
+    # smtp_pw: str
+    DOC_ANALYST_RUNPOD_POD_ID: str
+    RUNPOD_BEARER_TOKEN: str
+    OPENAI_API_KEY: str
+    COGNITO_POOL_ID: str
+    COGNITO_APP_CLIENT_ID: str
+    COGNITO_APP_CLIENT_SECRET: str
+    HUGGING_FACE_HUB_TOKEN: str
+    SMTP_SERVER: str
+    SMTP_PORT: int
+    SMTP_USERNAME: str
+    SMTP_PASSWORD: str
+    SMTP_USE_TLS: bool
+    DESTINATION_EMAIL: str
+    SOURCE_EMAIL: str
+    SECRET_KEY: str
 
 
 def get_secrets(secret_name: str) -> Secrets:
@@ -54,55 +69,65 @@ def get_secrets(secret_name: str) -> Secrets:
 
     logger.info(f"Got secret {secret_name} with value {get_secret_value_response['SecretString']}")
     secret = get_secret_value_response['SecretString']
-    return Secrets(**json.loads(secret))
+    json_obj = json.loads(secret)
+    # convert keys to uppercase
+    uppercase_json_obj = {k.upper(): v for k, v in json_obj.items()}
+
+    return Secrets(**uppercase_json_obj)
 
 
-@functools.lru_cache(maxsize=None)
-def load_environment_variable(key: str, default: str = None) -> str:
+def load_environment_variables() -> None:
     """
-    Load the variable from the environment or secrets manager.
+    Load the variables from the environment and then updated from secrets manager 
+    Or if AWS_ENV is set to local, load from local .env file.
     """
-    key = key.upper()
-    useOsEnv = False
     if "AWS_ENV" in os.environ:
         awsEnv = os.environ.get("AWS_ENV")
         logger.info(f"AWS_ENV is {awsEnv}")
+        if awsEnv == "local":
+            load_dotenv(override=True)
+            logger.info(f"Loaded secrets from DOTENV for local environment")
+            return
 
     if "PORTAL_SECRETS" in os.environ:
         secret_name = os.environ.get("PORTAL_SECRETS")
         logger.info(f"Loading secrets from {secret_name} in Secrets Manager")
         secrets = get_secrets(secret_name)
-        logger.info(f"Loaded secrets from {secret_name} in Secrets Manager, got {secrets}")
-        os.environ['PORTAL_ALB_HEADER'] = secrets.portal_alb_header
-        # os.environ['RUNPOD_POD_ID'] = secrets.runpod_pod_id
-        os.environ['DOC_ANALYST_RUNPOD_POD_ID'] = secrets.doc_analyst_runpod_pod_id
-        os.environ['RUNPOD_BEARER_TOKEN'] = secrets.runpod_bearer_token
-        os.environ['OPENAI_API_KEY'] = secrets.openai_api_key
-        # the following are no longer needed
-        os.environ['COGNITO_POOL_ID'] = secrets.cognito_pool_id
-        os.environ['COGNITO_APP_CLIENT_ID'] = secrets.cognito_app_client_id
-        os.environ['COGNITO_APP_CLIENT_SECRET'] = secrets.cognito_app_client_secret
-        os.environ['HUGGING_FACE_HUB_TOKEN'] = secrets.hugging_face_hub_token
-        os.environ['SMTP_USER'] = secrets.smtp_user
-        os.environ['SMTP_PW'] = secrets.smtp_pw
+        logger.info(f"Loaded secrets from {secret_name} in Secrets Manager")
+
+        os.environ['DOC_ANALYST_RUNPOD_POD_ID'] = secrets.DOC_ANALYST_RUNPOD_POD_ID
+        os.environ['RUNPOD_BEARER_TOKEN'] = secrets.RUNPOD_BEARER_TOKEN
+        os.environ['OPENAI_API_KEY'] = secrets.OPENAI_API_KEY
+        os.environ['COGNITO_POOL_ID'] = secrets.COGNITO_POOL_ID
+        os.environ['COGNITO_APP_CLIENT_ID'] = secrets.COGNITO_APP_CLIENT_ID
+        os.environ['COGNITO_APP_CLIENT_SECRET'] = secrets.COGNITO_APP_CLIENT_SECRET
+        os.environ['HUGGING_FACE_HUB_TOKEN'] = secrets.HUGGING_FACE_HUB_TOKEN
+        os.environ['SMTP_SERVER'] = secrets.SMTP_SERVER
+        os.environ['SMTP_PORT'] = secrets.SMTP_PORT
+        os.environ['SMTP_USERNAME'] = secrets.SMTP_USERNAME
+        os.environ['SMTP_PASSWORD'] = secrets.SMTP_PASSWORD
+        os.environ['SMTP_USE_TLS'] = secrets.SMTP_USE_TLS
+        os.environ['DESTINATION_EMAIL'] = secrets.DESTINATION_EMAIL
+        os.environ['SOURCE_EMAIL'] = secrets.M
+        os.environ['SECRET_KEY'] = secrets.SECRET_KEY
 
         logger.info("Loaded secrets from AWS Secrets Manager")
-        useOsEnv = True
     else:
         logger.info("No secrets loaded from AWS Secrets Manager")
 
-    if useOsEnv:
-        value = os.environ.get(key)
-        logger.info(f"Loading ENV VARIABLE {key} from OS ENVIRONMENT")
-    else:
-        load_dotenv(override=True)
-        value = os.environ.get(key)
-        logger.info(f"Loading ENV VARIABLE {key} from DOTENV")
+    return
 
+@functools.lru_cache(maxsize=None)
+def load_environment_variable(key: str, default: str = None) -> str:
+    """
+    Load the variables from the environment or secrets manager or .env file.
+    """
+    key = key.upper()
+    value = os.environ.get(key)
+    logger.info(f"Loading ENV VARIABLE {key} from OS ENVIRONMENT")
     if value is None:
         value = default
-        logger.error(f"No ENV VARIABLE has been loaded for {key} so defaulting to {default}")
-
+        logger.error(f"No ENV VARIABLE has been found for {key} so defaulting to {default}")
     return value
 
 

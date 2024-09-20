@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 import logging
 
-from config import Config
+from config import Config, load_environment_variables
 from authorizer import check_auth_token
 from model.feedback import CreateFeedbackRequest, CreateFeedbackResponse
 from service.smtp_client import SmtpClient
@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
+load_environment_variables()
 app = Flask(__name__, static_folder='../frontend/build')
 app.config.from_object(Config)
 CORS(app)
