@@ -21,7 +21,7 @@ load_environment_variables()
 app = Flask(__name__, static_folder='../frontend/build')
 app.config.from_object(Config)
 CORS(app)
-smtp_client = SmtpClient(app.config)
+smtp_client = SmtpClient()
 
 @app.route('/api/feedback', methods=['POST'])
 @check_auth_token

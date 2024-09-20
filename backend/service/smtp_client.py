@@ -1,17 +1,16 @@
 from email.mime.text import MIMEText
 import smtplib
-from config import Config
+from config import load_environment_variable
 
 class SmtpClient:
-    def __init__(self, config: Config):
-        self.config = config
-        self.smtp_server = config['SMTP_SERVER']
-        self.smtp_port = config['SMTP_PORT']
-        self.smtp_use_tls =config['SMTP_USE_TLS']
-        self.source_email = config['SOURCE_EMAIL']
-        self.destination_email =config['DESTINATION_EMAIL']
-        self.smtp_username = config['SMTP_USERNAME']
-        self.smtp_password = config['SMTP_PASSWORD']
+    def __init__(self):
+        self.smtp_server = load_environment_variable('SMTP_SERVER', 'smtp.example.com')
+        self.smtp_port = int(load_environment_variable('SMTP_PORT', 587))
+        self.smtp_use_tls = load_environment_variable('SMTP_USE_TLS', 'True') == 'True'
+        self.source_email = load_environment_variable('SOURCE_EMAIL', 'user@example.com')
+        self.destination_email = load_environment_variable('DESTINATION_EMAIL', 'feedback@example.com')
+        self.smtp_username = load_environment_variable('SMTP_USERNAME', 'user@example.com')
+        self.smtp_password = load_environment_variable('SMTP_PASSWORD', 'password')
 
 
     def send_email(self, subject: str, body: str, from_email: str = None, to_email: str = None):

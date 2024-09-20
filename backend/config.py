@@ -34,10 +34,10 @@ class Secrets(BaseModel):
     COGNITO_APP_CLIENT_SECRET: str
     HUGGING_FACE_HUB_TOKEN: str
     SMTP_SERVER: str
-    SMTP_PORT: int
+    SMTP_PORT: str
     SMTP_USERNAME: str
     SMTP_PASSWORD: str
-    SMTP_USE_TLS: bool
+    SMTP_USE_TLS: str
     DESTINATION_EMAIL: str
     SOURCE_EMAIL: str
     SECRET_KEY: str
@@ -81,6 +81,8 @@ def load_environment_variables() -> None:
     Load the variables from the environment and then updated from secrets manager 
     Or if AWS_ENV is set to local, load from local .env file.
     """
+
+    logger.info("Loading environment variables")
     if "AWS_ENV" in os.environ:
         awsEnv = os.environ.get("AWS_ENV")
         logger.info(f"AWS_ENV is {awsEnv}")
@@ -138,17 +140,6 @@ runpod_credentials_chat = {
 
 
 class Config:
-    # SMTP Configuration
-    SMTP_SERVER = load_environment_variable('SMTP_SERVER', 'smtp.example.com') # os.getenv('SMTP_SERVER', 'smtp.example.com')
-    SMTP_PORT = int(load_environment_variable('SMTP_PORT', 587)) # int(os.getenv('SMTP_PORT', 587))
-    SMTP_USERNAME = load_environment_variable('SMTP_USERNAME', 'user@example.com') # os.getenv('SMTP_USERNAME', 'user@example.com')
-    SMTP_PASSWORD = load_environment_variable('SMTP_PASSWORD', 'password') # os.getenv('SMTP_PASSWORD', 'password')
-    SMTP_USE_TLS = load_environment_variable('SMTP_USE_TLS', 'True') # os.getenv('SMTP_USE_TLS', 'True') == 'True'
-    
-    # Destination Email
-    DESTINATION_EMAIL = load_environment_variable('DESTINATION_EMAIL', 'feedback@example.com') # os.getenv('DESTINATION_EMAIL', 'feedback@example.com')
-    SOURCE_EMAIL = load_environment_variable('SOURCE_EMAIL', 'user@example.com') # os.getenv('SOURCE_EMAIL', 'user@example.com')
-    
     # Flask Configuration
     SECRET_KEY = load_environment_variable('SECRET_KEY', 'your_secret_key') # os.getenv('SECRET_KEY', 'your_secret_key')
-    PORT = load_environment_variable('PORT', 8080) # int(os.getenv('PORT', 8080)) # 8080
+    PORT = int(load_environment_variable('PORT', 8080)) # int(os.getenv('PORT', 8080)) # 8080
