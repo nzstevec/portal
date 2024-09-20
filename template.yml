@@ -74,7 +74,6 @@ Resources:
       - EcsCluster
       - DefaultSecurityGroup
     Properties:
-      # Name: !Join [ '', [ !Ref EcsClusterName, -elb ] ]
       IpAddressType: ipv4
       Scheme: internet-facing
       SecurityGroups:
@@ -89,7 +88,7 @@ Resources:
     DependsOn:
       - ApplicationLoadBalancer
     Properties:
-      HealthCheckEnabled: true
+      HealthCheckEnabled: false
       HealthCheckPort: 8080
       HealthCheckProtocol: HTTP
       Port: 8080
@@ -98,42 +97,42 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStack}-vpc-id
 
-  Listener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - Order: 1
-          Type: "redirect"
-          RedirectConfig:
-            Path: "/#{path}"
-            Host: "garibweb.shangarpawar.com"
-            Query: "#{query}"
-            Protocol: "HTTPS"
-            StatusCode: "HTTP_301"
-            Port: "443"
-      LoadBalancerArn: !Ref ApplicationLoadBalancer
-      Port: 80
-      Protocol: HTTP
+  # Listener:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   Properties:
+  #     DefaultActions:
+  #       - Order: 1
+  #         Type: "redirect"
+  #         RedirectConfig:
+  #           Path: "/#{path}"
+  #           Host: "garibweb.shangarpawar.com"
+  #           Query: "#{query}"
+  #           Protocol: "HTTPS"
+  #           StatusCode: "HTTP_301"
+  #           Port: "443"
+  #     LoadBalancerArn: !Ref ApplicationLoadBalancer
+  #     Port: 80
+  #     Protocol: HTTP
 
   ListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
       DefaultActions:
-      - Order: 1
-        AuthenticateCognitoConfig:
-          OnUnauthenticatedRequest: "authenticate"
-          UserPoolClientId: "4c30m5pgir5h32o186t48dln2p"
-          UserPoolDomain: "garib"
-          SessionTimeout: "1800"
-          Scope: "openid"
-          SessionCookieName: "AWSELBAuthSessionCookie"
-          UserPoolArn: "arn:aws:cognito-idp:ap-southeast-2:058264164905:userpool/ap-southeast-2_7SEHafDKv"
-          AuthenticationRequestExtraParams: {}
-        Type: "authenticate-cognito"
-      - Order: 2
+      # - Order: 1
+      #   AuthenticateCognitoConfig:
+      #     OnUnauthenticatedRequest: "authenticate"
+      #     UserPoolClientId: "4c30m5pgir5h32o186t48dln2p"
+      #     UserPoolDomain: "garib"
+      #     SessionTimeout: "1800"
+      #     Scope: "openid"
+      #     SessionCookieName: "AWSELBAuthSessionCookie"
+      #     UserPoolArn: "arn:aws:cognito-idp:ap-southeast-2:058264164905:userpool/ap-southeast-2_7SEHafDKv"
+      #     AuthenticationRequestExtraParams: {}
+      #   Type: "authenticate-cognito"
+      # - Order: 2
+      - Type: "forward"
         TargetGroupArn: !Ref TargetGroup
-        Type: "forward"
         ForwardConfig:
           TargetGroupStickinessConfig:
             Enabled: false
