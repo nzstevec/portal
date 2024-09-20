@@ -53,7 +53,7 @@ def check_auth_token(f):
             headers = request.headers
             # logger.info(f"Headers: {headers}")
             if HEADER_AUTH_TOKEN not in headers and HEADER_ACCESS_TOKEN not in headers:
-                logger.info(f"No token provided")
+                logger.error(f"No token provided")
                 kw[AUTH_ERROR] = "No token provided"
                 return f(*args, **kw)
             if HEADER_AUTH_TOKEN in headers:
@@ -64,13 +64,14 @@ def check_auth_token(f):
                 given_name = jwt_data.get("given_name")
                 family_name = jwt_data.get("family_name")
                 email = jwt_data.get("email")
+                logger.info(f"idtoken - username: {username}, given_name: {given_name}, family_name: {family_name}, email: {email}")
             if HEADER_ACCESS_TOKEN in headers:
                 # logger.info(f"Token[X-Amzn-Oidc-Accesstoken]: {headers[HEADER_ACCESS_TOKEN]}")
                 token = headers[HEADER_ACCESS_TOKEN].replace("Bearer ", "")
                 jwt_data = jwt.decode(token, options={"verify_signature": False})
                 cognito_groups = jwt_data.get("cognito:groups", [])
                 roles = ", ".join(cognito_groups)
-
+                logger.info(f"accesstoken - roles: {roles}")
             kw.update({
                 "username": username,
                 "given_name": given_name,
@@ -79,6 +80,7 @@ def check_auth_token(f):
                 "roles": roles
             })
         except Exception as e:
+            logger.error(f"Error checking auth token: {traceback.format_exc()}")
             kw[AUTH_ERROR] = e
         return f(*args, **kw)
 

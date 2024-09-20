@@ -28,7 +28,7 @@ smtp_client = SmtpClient(app.config)
 def feedback(*args, **kw):
     # logger.info(f"/api/feedback called with headers {request.headers}")
     iso_string = datetime.now().isoformat()
-    if kw["auth_error"] is not None:
+    if "auth_error" in kw:
         print(f"Error: {kw['auth_error']}")
         # return Response(jsonify(message=kw["auth_error"]), status=401)
     try:
