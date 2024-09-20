@@ -88,7 +88,7 @@ Resources:
     DependsOn:
       - ApplicationLoadBalancer
     Properties:
-      HealthCheckEnabled: false
+      HealthCheckEnabled: true
       HealthCheckPort: 8080
       HealthCheckProtocol: HTTP
       Port: 8080
