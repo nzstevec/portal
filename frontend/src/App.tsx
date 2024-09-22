@@ -148,13 +148,7 @@ const AppInner: React.FC = () => {
         <MainContent>
           <Routes>
             <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <UnAuthenticated />
-                </ProtectedRoute>
-              }
-            />
+              path="/" element={<UnAuthenticated /> } />
             <Route
               path="/user-notes"
               element={
@@ -193,7 +187,19 @@ const AppInner: React.FC = () => {
           </Routes>
         </MainContent>
       </Content>
-      <StatusBar>Status: Online | © 2024 SCOTi Sandbox</StatusBar>
+      <StatusBar>
+      {user ? (
+                <>
+                  <span>
+                    {user.profile?.email} logged in | © 2024 SCOTi Sandbox
+                  </span>
+                </>
+              ) : (
+                <span>
+                  You are not authenticated - Log In first | © 2024 SCOTi Sandbox
+                </span>
+              )}
+        </StatusBar>
     </AppContainer>
   );
 };
