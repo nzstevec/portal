@@ -62,8 +62,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    userManager.clearStaleState().catch((error) => {
+      console.error('Logout error in clearStaleState:', error);
+    })
     userManager.signoutRedirect().catch((error) => {
-      console.error('Logout error:', error);
+      console.error('Logout error in signoutRedirect:', error);
     });
   };
 
