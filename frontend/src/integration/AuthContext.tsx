@@ -62,12 +62,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    userManager.clearStaleState().catch((error) => {
-      console.error('Logout error in clearStaleState:', error);
-    })
-    userManager.signoutRedirect().catch((error) => {
-      console.error('Logout error in signoutRedirect:', error);
-    });
+    localStorage.clear();
+    // userManager.clearStaleState().catch((error) => {
+    //   console.error('Logout error in clearStaleState:', error);
+    // })
+    // userManager.signoutRedirect().catch((error) => {
+    //   console.error('Logout error in signoutRedirect:', error);
+    // });
   };
 
   console.log("authcontext.provider with user", user)
