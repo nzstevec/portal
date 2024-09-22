@@ -8,20 +8,20 @@ const welcome = `
 2.	This sandbox provides secure access to a set of beta version SCOTi AI agents. 
 3.	The purpose is User experimentation; to consider “what might be possible” with a sovereign SCOTi AI workbench, or GenAI workshop or even an AI factory.
 
-`
+`;
 
 const sandbox = `
 1.	This sandbox of beta SCOTi agents is not scaled-up or fully polished; unlike a dedicated Pilot or a production SCOTi AI agent deployment. 
 2.	It is in a secure and robust environment running on the AWS Sydney Cloud.  But it has limits that (sometimes) mean it may necessary to re-start or scale-back your experiments. 
 3.	SCOTi will generally tell you if something goes wrong.  When in doubt you can always just ask SCOTi if you have a question and a page reload will always get you re-started.
 
-`
+`;
 
 const health_warning = `
 1.	Note this SCOTi AI sandbox site >> portal.scoti.au << is not an official Aust Govt website and it should be used accordingly.  
 2.	If it is helpful, we can provision you with additional access credentials using an alternative, private email address, if preferred.  Please just send a Request, using the Feedback Tab in SCOTi and include your alternative private email address.  We will send you another onboarding email to the new address.
 
-`
+`;
 
 const tips = `
 1.	Please keep input document within the current 500K char limit (~200-250 pages).  You may see an >  AxiosError < if things get too big.  Just reload the page and try a smaller file.
@@ -43,27 +43,30 @@ h.	To start again with a different document to audit, select the radio button in
 9.	The Feedback tab provides a quick reliable way to provide any Comments, Questions, Anomalies & Feature Requests.  The inputs are automatically forwarded to our SCOTi team for review and email feedback will be provided. The feedback will also be part of a post-trial review of the Scoti sandbox experience.  
 10.	The About tab provides an introduction to SCOTi including a outline of the sandbox architecture.  It also provides our Privacy commitment and Terms of Use for the sandbox.
 
-`
+`;
 
 const UserNotesContainer = styled.div`
   padding: 20px 80px;
 `;
 
-const UserNotes: React.FC = () => (
-  <UserNotesContainer>
-    <Expander title={'Welcome'} initialyExpanded={true}>
-      <ReactMarkdown>{welcome}</ReactMarkdown>
-    </Expander>
-    <Expander title={'Its a sandbox'} initialyExpanded={true}>
-      <ReactMarkdown>{sandbox}</ReactMarkdown>
-    </Expander>
-    <Expander title={'There is a health warning'} initialyExpanded={true}>
-      <ReactMarkdown>{health_warning}</ReactMarkdown>
-    </Expander>
-    <Expander title={'Some tips and tricks'} initialyExpanded={true}>
-      <ReactMarkdown>{tips}</ReactMarkdown>
-    </Expander>
-  </UserNotesContainer>
-);
+function UserNotes() {
+  console.log('User Notes');
+  return (
+    <UserNotesContainer>
+      <Expander title={'Welcome'} initialyExpanded={true}>
+        <ReactMarkdown>{welcome}</ReactMarkdown>
+      </Expander>
+      <Expander title={'Its a sandbox'} initialyExpanded={true}>
+        <ReactMarkdown>{sandbox}</ReactMarkdown>
+      </Expander>
+      <Expander title={'There is a health warning'} initialyExpanded={true}>
+        <ReactMarkdown>{health_warning}</ReactMarkdown>
+      </Expander>
+      <Expander title={'Some tips and tricks'} initialyExpanded={true}>
+        <ReactMarkdown>{tips}</ReactMarkdown>
+      </Expander>
+    </UserNotesContainer>
+  );
+}
 
 export default UserNotes;

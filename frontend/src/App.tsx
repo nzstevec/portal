@@ -1,14 +1,24 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Link,
+  useLocation,
+} from 'react-router-dom';
 import styled from 'styled-components';
 
+import { AuthProvider, useAuth } from './integration/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 // Import page components
+import UnAuthenticated from './pages/Unauthenticated';
 import UserNotes from './pages/UserNotes';
 import About from './pages/About';
-import Services from './pages/Services';
-import Contact from './pages/Contact';
+// import Services from './pages/Services';
+// import Contact from './pages/Contact';
 import Feedback from './pages/Feedback';
 import DocAnalyst from './pages/DocAnalyst';
+import Callback from './pages/Callback';
 
 // Styled components
 const AppContainer = styled.div`
@@ -49,7 +59,8 @@ interface NavLinkProps {
 }
 
 const NavLink = styled(Link)<NavLinkProps>`
-  color: ${(props) => (props.isActive ? '#FFD700' : 'white')};  /* Highlight active link */
+  color: ${(props) =>
+    props.isActive ? '#FFD700' : 'white'}; /* Highlight active link */
   text-decoration: none;
   &:hover {
     text-decoration: underline;
@@ -74,55 +85,126 @@ const StatusBar = styled.footer`
 `;
 
 const AppInner: React.FC = () => {
-
-  const location = useLocation(); 
+  const { user, login, logout } = useAuth();
+  console.log('user = ', user);
+  const location = useLocation();
   return (
-      <AppContainer>
-        <Navbar>
-          <NavList>
-            <NavItem>
-              <NavLink to="/" isActive={location.pathname === '/'}>User Notes</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/doc-analyst" isActive={location.pathname === '/doc-analyst'}>Doc Analyst 𝞫</NavLink>
-            </NavItem>
-            <NavItem>
+    <AppContainer>
+      <Navbar>
+        <NavList>
+          <NavItem>
+            <NavLink
+              to="/user-notes"
+              isActive={location.pathname === '/user-notes'}
+            >
+              User Notes
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              to="/doc-analyst"
+              isActive={location.pathname === '/doc-analyst'}
+            >
+              Doc Analyst 𝞫
+            </NavLink>
+          </NavItem>
+          {/* <NavItem>
               <NavLink to="/services" isActive={location.pathname === '/services'}>Services</NavLink>
             </NavItem>
             <NavItem>
               <NavLink to="/contact" isActive={location.pathname === '/contact'}>Contact</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/about" isActive={location.pathname === '/about'}>About</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/feedback" isActive={location.pathname === '/feedback'}>Feedback</NavLink>
-            </NavItem>
-          </NavList>
-        </Navbar>
-        <Content>
-          <Sidebar></Sidebar>
-          <MainContent>
-            <Routes>
-              <Route path="/" element={<UserNotes />} />
-              <Route path="/doc-analyst" element={<DocAnalyst />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/feedback" element={<Feedback />} />
-            </Routes>
-          </MainContent>
-        </Content>
-        <StatusBar>Status: Online | © 2024 SCOTi Sandbox</StatusBar>
-      </AppContainer>
+            </NavItem> */}
+          <NavItem>
+            <NavLink to="/about" isActive={location.pathname === '/about'}>
+              About
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              to="/feedback"
+              isActive={location.pathname === '/feedback'}
+            >
+              Feedback
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink to="#" isActive={false}>
+              {user ? (
+                <>
+                  <span style={{ marginRight: '1rem' }}>
+                    {user.profile?.email}
+                  </span>
+                  <button onClick={logout}>Logout</button>
+                </>
+              ) : (
+                <button onClick={login}>Login</button>
+              )}
+            </NavLink>
+          </NavItem>
+        </NavList>
+      </Navbar>
+      <Content>
+        <Sidebar></Sidebar>
+        <MainContent>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <UnAuthenticated />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user-notes"
+              element={
+                <ProtectedRoute>
+                  <UserNotes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doc-analyst"
+              element={
+                <ProtectedRoute>
+                  <DocAnalyst />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="/services" element={<Services authenticated={isAuthenticated}/>} />
+              <Route path="/contact" element={<Contact authenticated={isAuthenticated}/>} /> */}
+            <Route
+              path="/about"
+              element={
+                <ProtectedRoute>
+                  <About />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/feedback"
+              element={
+                <ProtectedRoute>
+                  <Feedback />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/callback" element={<Callback />} />
+          </Routes>
+        </MainContent>
+      </Content>
+      <StatusBar>Status: Online | © 2024 SCOTi Sandbox</StatusBar>
+    </AppContainer>
   );
-}
+};
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <AppInner />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppInner />
+      </Router>
+    </AuthProvider>
   );
 };
 

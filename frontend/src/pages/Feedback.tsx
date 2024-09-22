@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Selectbox from '../components/ui/Selectbox';
-import BaseApiResponse, { apiService }  from '../integration/ApiService';
+import BaseApiResponse, { apiService } from '../integration/ApiService';
 import FeedbackDtoImpl from '../model/FeedbackDto';
 
 interface FormData {
@@ -40,7 +40,7 @@ const TextArea = styled.textarea`
   height: 200px;
   background-color: rgba(49, 51, 63, 0.2);
 `;
-const Feedback: React.FC = () => {
+function Feedback() {
   const categories = [
     'Feature Request',
     'Output Anomoly',
@@ -60,8 +60,13 @@ const Feedback: React.FC = () => {
     setSubmitting(true);
     // Call API or perform action here
     console.log('Feedback submitted:', formData);
-    const feedbackDto = new FeedbackDtoImpl(formData.category, formData.feedback, 'someone@somewhere.com');
-    apiService.createFeedback(feedbackDto)
+    const feedbackDto = new FeedbackDtoImpl(
+      formData.category,
+      formData.feedback,
+      'someone@somewhere.com'
+    );
+    apiService
+      .createFeedback(feedbackDto)
       .then((response: BaseApiResponse) => {
         console.log(response);
         setFormData({ category: '', feedback: '' });
@@ -70,7 +75,7 @@ const Feedback: React.FC = () => {
       })
       .catch((error: BaseApiResponse) => {
         console.error(error);
-      });   
+      });
   };
 
   return (
@@ -101,6 +106,6 @@ const Feedback: React.FC = () => {
       </FormContainer>
     </FeedbackContainer>
   );
-};
+}
 
 export default Feedback;
