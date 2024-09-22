@@ -61,7 +61,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const logoutUser = async () => {
+    const clientId = userManager.settings.client_id;
+    const logoutUri = userManager.settings.redirect_uri;
+    const cognitoDomain = oidcConfig.cognito_domain;
+  
+    const logoutUrl = `https://${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${logoutUri}&response_type=code`;
+  
+    try {
+      const response = await fetch(logoutUrl, {
+        method: 'GET',
+        credentials: 'include'
+      });
+  
+      if (response.ok) {
+        console.log('User logged out successfully');
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const logout = () => {
+    logoutUser();
     localStorage.clear();
     window.location.reload();
     // userManager.clearStaleState().catch((error) => {

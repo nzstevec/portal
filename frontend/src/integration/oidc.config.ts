@@ -8,5 +8,5 @@ export const oidcConfig = {
   post_logout_redirect_uri: 'https://next.scoti.au',
   responseType: 'code',
   scope: 'openid profile email',
-
+  cognito_domain: "https://garib.auth.ap-southeast-2.amazoncognito.com"
 };
