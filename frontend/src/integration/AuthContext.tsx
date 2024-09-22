@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.clear();
+    window.location.reload();
     // userManager.clearStaleState().catch((error) => {
     //   console.error('Logout error in clearStaleState:', error);
     // })
