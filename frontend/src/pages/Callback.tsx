@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../integration/AuthContext';
-import ProtectedRoute from '../components/ProtectedRoute';
-import UserNotes from './UserNotes';
+import UnAuthenticated from './Unauthenticated';
 
 const Callback: React.FC = () => {
   // const navigate = useNavigate();
@@ -18,9 +16,7 @@ const Callback: React.FC = () => {
 
   console.log('handling callback');
   return (
-    <ProtectedRoute>
-      <UserNotes />
-    </ProtectedRoute>
+    <UnAuthenticated />
   );
 };
 

@@ -24,7 +24,7 @@ const logoutUri = oidcConfig.post_logout_redirect_uri;
 const cognitoDomain = oidcConfig.cognito_domain;
 const authorizationEndpoint = `${cognitoDomain}/oauth2/authorize`;
 const tokenEndpoint = `${cognitoDomain}/oauth2/token`;
-const userinfoEndpoint = `${cognitoDomain}/oauth2/userinfo`;
+const userinfoEndpoint = `${cognitoDomain}/oauth2/userInfo`;
 const endSessionEndpoint = `${cognitoDomain}/logout`;
 
 const userManager = new UserManager({
@@ -87,10 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = () => {
     console.log("login user")
     userManager.signinRedirect()
-    .then(() => {
-        console.log("redirected")
-        window.location.href = '/user-notes'
-    })
+    // .then(() => {
+    //     console.log("redirected")
+    //     window.location.href = '/user-notes'
+    // })
     .catch((error) => {
       console.error('Login error:', error);
     });
