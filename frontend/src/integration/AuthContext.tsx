@@ -20,7 +20,8 @@ const clientId = oidcConfig.client_id;
 const redirectUri = oidcConfig.redirect_uri;
 const logoutUri = oidcConfig.redirect_uri;
 const cognitoDomain = oidcConfig.cognito_domain;
-const authorizationEndpoint = `https://${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+const authorizationEndpoint = `https://${cognitoDomain}/oauth2/authorize`;
+const fullAuthorizationEndpoint = `https://${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
 const endSessionEndpoint = `https://${cognitoDomain}/logout?client_id=${encodeURIComponent(clientId)}&logout_uri=${encodeURIComponent(logoutUri)}&response_type=code`;
 
 const userManager = new UserManager({
