@@ -17,14 +17,16 @@ const AuthContext = createContext<AuthContextProps>({
 export const useAuth = () => useContext(AuthContext);
 
 const clientId = oidcConfig.client_id;
+const redirectUri = oidcConfig.redirect_uri;
 const logoutUri = oidcConfig.redirect_uri;
 const cognitoDomain = oidcConfig.cognito_domain;
-
-const endSessionEndpoint = `https://${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${logoutUri}&response_type=code`;
+const authorizationEndpoint = `https://${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+const endSessionEndpoint = `https://${cognitoDomain}/logout?client_id=${encodeURIComponent(clientId)}&logout_uri=${encodeURIComponent(logoutUri)}&response_type=code`;
 
 const userManager = new UserManager({
   ...oidcConfig,
   metadata: {
+    authorization_endpoint: authorizationEndpoint,
     end_session_endpoint: endSessionEndpoint,
   },
   userStore: new WebStorageStateStore({ store: window.localStorage }),
