@@ -24,7 +24,7 @@ const logoutUri = oidcConfig.post_logout_redirect_uri;
 const cognitoDomain = oidcConfig.cognito_domain;
 const authorizationEndpoint = `${cognitoDomain}/oauth2/authorize`;
 const tokenEndpoint = `${cognitoDomain}/oauth2/token`;
-const userinfoEndpoint = `${cognitoDomain}/oauth2/token`;
+const userinfoEndpoint = `${cognitoDomain}/oauth2/userinfo`;
 const endSessionEndpoint = `${cognitoDomain}/logout`;
 
 const userManager = new UserManager({
