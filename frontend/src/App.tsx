@@ -183,6 +183,7 @@ const AppInner: React.FC = () => {
               }
             />
             <Route path="/callback" element={<Callback />} />
+            <Route path="/logout" element={<UnAuthenticated />} />
             {/* <Route
               path="/callback"
               element={
