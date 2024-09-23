@@ -32,6 +32,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userManager.events.addUserLoaded(setUser);
     userManager.events.addUserUnloaded(() => setUser(null));
 
+    // Handle logout event from other tabs
+    const handleStorageEvent = (event: StorageEvent) => {
+        if (event.key === 'logout') {
+          userManager.removeUser().then(() => setUser(null));
+        }
+      };
+  
+      window.addEventListener('storage', handleStorageEvent);
+
     // Handle callback redirects
     const handleCallback = async () => {
       if (window.location.pathname === '/callback') {
@@ -56,7 +65,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = () => {
-    userManager.signinRedirect().catch((error) => {
+    userManager.signinRedirect()
+    .then(() => {
+        window.location.href = '/user-notes'
+    })
+    .catch((error) => {
       console.error('Login error:', error);
     });
   };
@@ -76,6 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
       if (response.ok) {
         console.log('User logged out successfully');
+        // Notify other tabs about logout
+        localStorage.setItem('logout', Date.now().toString());
+        localStorage.removeItem('logout');
       } else {
         console.error('Logout failed');
       }
@@ -85,15 +101,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    console.log("logout user");
     logoutUser();
+    console.log("clearing local storage");
     localStorage.clear();
+    console.log("refreshing page");
     window.location.reload();
-    // userManager.clearStaleState().catch((error) => {
-    //   console.error('Logout error in clearStaleState:', error);
-    // })
-    // userManager.signoutRedirect().catch((error) => {
-    //   console.error('Logout error in signoutRedirect:', error);
-    // });
+    console.log("clearing stale state");
+    userManager.clearStaleState().catch((error) => {
+      console.error('Logout error in clearStaleState:', error);
+    })
+    console.log("signout redirect");
+    userManager.signoutRedirect().catch((error) => {
+      console.error('Logout error in signoutRedirect:', error);
+    });
   };
 
   console.log("authcontext.provider with user", user)
