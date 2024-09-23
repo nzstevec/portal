@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import { oidcConfig } from './oidc.config';
 
@@ -42,6 +43,7 @@ const userManager = new UserManager({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const history = useHistory();
 
   useEffect(() => {
     // Load user from storage
@@ -140,12 +142,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     })
     .then(() => {
-        console.log("logged out")
+        console.log("signout redirect then")
         window.location.href = '/'
     })
     .catch((error) => {
       console.error('Logout error in signoutRedirect:', error);
     });
+    console.log("logged out")
+    history.push('/');
   };
 
 //   console.log("authcontext.provider with user", user)
