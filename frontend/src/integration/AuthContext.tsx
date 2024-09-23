@@ -143,10 +143,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout_uri: logoutUri
         }
     })
-    .then(() => {
-        console.log("signout redirect then")
-        window.location.href = '/'
-    })
+    // .then(() => {
+    //     console.log("signout redirect then")
+    //     window.location.href = '/'
+    // })
     .catch((error) => {
       console.error('Logout error in signoutRedirect:', error);
     });
