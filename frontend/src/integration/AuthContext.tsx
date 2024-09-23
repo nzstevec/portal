@@ -16,12 +16,15 @@ const AuthContext = createContext<AuthContextProps>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const issuer = oidcConfig.authority;
+const jwks = `${oidcConfig.authority}/.well-known/jwks.json`;
 const clientId = oidcConfig.client_id;
 const redirectUri = oidcConfig.redirect_uri;
 const logoutUri = oidcConfig.redirect_uri;
 const cognitoDomain = oidcConfig.cognito_domain;
 const authorizationEndpoint = `${cognitoDomain}/oauth2/authorize`;
-const fullAuthorizationEndpoint = `${cognitoDomain}/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+const tokenEndpoint = `${cognitoDomain}/oauth2/token`;
+const userinfoEndpoint = `${cognitoDomain}/oauth2/token`;
 const endSessionEndpoint = `${cognitoDomain}/logout?client_id=${encodeURIComponent(clientId)}&logout_uri=${encodeURIComponent(logoutUri)}&response_type=code`;
 
 const userManager = new UserManager({
@@ -29,6 +32,10 @@ const userManager = new UserManager({
   metadata: {
     authorization_endpoint: authorizationEndpoint,
     end_session_endpoint: endSessionEndpoint,
+    issuer: issuer,
+    jwks_uri: jwks,
+    token_endpoint: tokenEndpoint,
+    userinfo_endpoint: userinfoEndpoint,
   },
   userStore: new WebStorageStateStore({ store: window.localStorage }),
 });
