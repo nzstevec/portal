@@ -16,8 +16,17 @@ const AuthContext = createContext<AuthContextProps>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const clientId = oidcConfig.client_id;
+const logoutUri = oidcConfig.redirect_uri;
+const cognitoDomain = oidcConfig.cognito_domain;
+
+const endSessionEndpoint = `https://${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${logoutUri}&response_type=code`;
+
 const userManager = new UserManager({
   ...oidcConfig,
+  metadata: {
+    end_session_endpoint: endSessionEndpoint,
+  },
   userStore: new WebStorageStateStore({ store: window.localStorage }),
 });
 
@@ -129,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  console.log("authcontext.provider with user", user)
+//   console.log("authcontext.provider with user", user)
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
       {children}
