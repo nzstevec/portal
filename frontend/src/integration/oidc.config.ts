@@ -3,7 +3,7 @@ export const oidcConfig = {
   client_id: '5bba5vn7tfk4frne2ne990i4e3',
   redirect_uri: 'https://next.scoti.au/callback',
   silent_redirect_uri: 'https://next.scoti.au/callback',
-  post_logout_redirect_uri: 'https://next.scoti.au',
+  post_logout_redirect_uri: 'https://next.scoti.au/logout',
   responseType: 'code',
   scope: 'openid profile email',
   cognito_domain: "https://garib.auth.ap-southeast-2.amazoncognito.com"
