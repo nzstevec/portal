@@ -86,7 +86,7 @@ const StatusBar = styled.footer`
 
 const AppInner: React.FC = () => {
   const { user, login, logout } = useAuth();
-  console.log('user = ', user);
+  // console.log('user = ', user);
   const location = useLocation();
   return (
     <AppContainer>
@@ -182,7 +182,14 @@ const AppInner: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/callback" element={<Callback />} />
+            <Route
+              path="/callback"
+              element={
+                <ProtectedRoute>
+                  <UserNotes />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </MainContent>
       </Content>

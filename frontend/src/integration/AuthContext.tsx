@@ -101,18 +101,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    console.log("logout user");
-    logoutUser();
-    console.log("clearing local storage");
-    localStorage.clear();
-    console.log("refreshing page");
-    window.location.reload();
-    console.log("clearing stale state");
-    userManager.clearStaleState().catch((error) => {
-      console.error('Logout error in clearStaleState:', error);
-    })
+    const clientId = oidcConfig.client_id;
+    const logoutUri = oidcConfig.post_logout_redirect_uri;
+    // console.log("logout user");
+    // logoutUser();
+    // console.log("clearing local storage");
+    // localStorage.clear();
+    // console.log("refreshing page");
+    // window.location.reload();
+    // console.log("clearing stale state");
+    // userManager.clearStaleState().catch((error) => {
+    //   console.error('Logout error in clearStaleState:', error);
+    // })
     console.log("signout redirect");
-    userManager.signoutRedirect().catch((error) => {
+    userManager.signoutRedirect({
+        extraQueryParams: {
+            client_id: clientId,
+            logout_uri: logoutUri
+        }
+    })
+    .then(() => {
+        console.log("logged out")
+        window.location.href = '/'
+    })
+    .catch((error) => {
       console.error('Logout error in signoutRedirect:', error);
     });
   };
