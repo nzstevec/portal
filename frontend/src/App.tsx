@@ -182,14 +182,15 @@ const AppInner: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
+            <Route path="/callback" element={<Callback />} />
+            {/* <Route
               path="/callback"
               element={
                 <ProtectedRoute>
                   <UserNotes />
                 </ProtectedRoute>
               }
-            />
+            /> */}
           </Routes>
         </MainContent>
       </Content>
