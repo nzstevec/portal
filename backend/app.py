@@ -55,13 +55,13 @@ def feedback(*args, **kw):
         logger.error(f"Error sending email: {feedbackResponse.model_dump_json()}")
         return jsonify(feedbackResponse.model_dump_json()), feedbackResponse.status
 
-@app.route('/streamlit')
-def streamlit_redirect():
-    # redirect /streamlit to the streamlit app on port 8501 in the same container as flask.
-    # Get the current protocol (http or https)
-    scheme = request.scheme
-    # Redirect to the Streamlit app on port 8501
-    return redirect(f"{scheme}://{request.host.split(':')[0]}:8501")
+# @app.route('/streamlit')
+# def streamlit_redirect():
+#     # redirect /streamlit to the streamlit app on port 8501 in the same container as flask.
+#     # Get the current protocol (http or https)
+#     scheme = request.scheme
+#     # Redirect to the Streamlit app on port 8501
+#     return redirect(f"{scheme}://{request.host.split(':')[0]}:8501")
 
 
 @app.route('/', defaults={'path': ''})

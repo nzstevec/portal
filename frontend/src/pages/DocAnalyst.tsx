@@ -7,15 +7,16 @@ const DocAnalystContainer = styled.div`
 `;
 
 function DocAnalyst() {
-  const currentProtocol = window.location.protocol;
-  const currentDomain = window.location.hostname;
-  const currentPort = window.location.port ? `:${window.location.port}` : '';
-
+  // const currentProtocol = window.location.protocol;
+  // const currentDomain = window.location.hostname;
+  // const currentPort = window.location.port ? `:${window.location.port}` : '';
+  const streamlit_doc_analyst_page = 'https://next.scoti.au/streamlit';
 
   // Construct the URL for the iframe
   // DocAnalyst is in a streamlit app on port 8501 in the same container as flask on port 8080
   // Flask routes /streamlit to the streamlit app on port 8501
-  const iframeUrl = `${currentProtocol}//${currentDomain}${currentPort}/streamlit`;
+  // const iframeUrl = `${currentProtocol}//${currentDomain}${currentPort}/streamlit`;
+  const iframeUrl = streamlit_doc_analyst_page;
   console.log('iframeUrl', iframeUrl);
   return (
     <DocAnalystContainer>

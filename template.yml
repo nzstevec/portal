@@ -97,60 +97,87 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStack}-vpc-id
 
-  # Listener:
+  StreamlitTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn:
+      - ApplicationLoadBalancer
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPort: 8501
+      HealthCheckProtocol: HTTP
+      Port: 8501
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStack}-vpc-id
+
+  # ListenerHTTPS:
   #   Type: AWS::ElasticLoadBalancingV2::Listener
   #   Properties:
+  #     SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
   #     DefaultActions:
-  #       - Order: 1
-  #         Type: "redirect"
-  #         RedirectConfig:
-  #           Path: "/#{path}"
-  #           Host: "garibweb.shangarpawar.com"
-  #           Query: "#{query}"
-  #           Protocol: "HTTPS"
-  #           StatusCode: "HTTP_301"
-  #           Port: "443"
-  #     LoadBalancerArn: !Ref ApplicationLoadBalancer
-  #     Port: 80
-  #     Protocol: HTTP
+  #     - Type: "forward"
+  #       TargetGroupArn: !Ref TargetGroup
+  #       ForwardConfig:
+  #         TargetGroupStickinessConfig:
+  #           Enabled: false
+  #           DurationSeconds: 3600
+  #         TargetGroups:
+  #         - TargetGroupArn: !Ref TargetGroup
+  #           Weight: 1
+  #     LoadBalancerArn: !Ref ApplicationLoadBalancer 
+  #     Port: 443
+  #     Certificates:
+  #     - CertificateArn: !Ref NextScotiAuCertificate
+  #     Protocol: HTTPS
 
-  ListenerHTTPS:
+  # Define the ALB Listener on port 443 (HTTPS)
+  HTTPSListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
       DefaultActions:
-      # - Order: 1
-      #   AuthenticateCognitoConfig:
-      #     OnUnauthenticatedRequest: "authenticate"
-      #     UserPoolClientId: "4c30m5pgir5h32o186t48dln2p"
-      #     UserPoolDomain: "garib"
-      #     SessionTimeout: "1800"
-      #     Scope: "openid"
-      #     SessionCookieName: "AWSELBAuthSessionCookie"
-      #     UserPoolArn: "arn:aws:cognito-idp:ap-southeast-2:058264164905:userpool/ap-southeast-2_7SEHafDKv"
-      #     AuthenticationRequestExtraParams: {}
-      #   Type: "authenticate-cognito"
-      # - Order: 2
-      - Type: "forward"
-        TargetGroupArn: !Ref TargetGroup
-        ForwardConfig:
-          TargetGroupStickinessConfig:
-            Enabled: false
-            DurationSeconds: 3600
-          TargetGroups:
-          - TargetGroupArn: !Ref TargetGroup
-            Weight: 1
-      LoadBalancerArn: !Ref ApplicationLoadBalancer 
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: text/plain
+            MessageBody: "Not Found"
+      LoadBalancerArn: !Ref MyLoadBalancer
       Port: 443
-      Certificates:
-      - CertificateArn: !Ref NextScotiAuCertificate
       Protocol: HTTPS
+      SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
+      Certificates:
+        - CertificateArn: !Ref NextScotiAuCertificate
+  
+  # Define the listener rules
+  HTTPSListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref StreamlitTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: ["/streamlit*"]
+      ListenerArn: !Ref HTTPSListener
+      Priority: 1
+
+  HTTPSDefaultRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: ["/*"]
+      ListenerArn: !Ref HTTPSListener
+      Priority: 10
 
   FargateService:
     Type: AWS::ECS::Service
     DependsOn:
       # - Listener
-      - ListenerHTTPS
+      - HTTPSListener
     Properties:
       Cluster: !Ref EcsCluster
       DeploymentController:
@@ -163,6 +190,10 @@ Resources:
           ContainerName: portal
           ContainerPort: 8080
           TargetGroupArn: !Ref TargetGroup
+        -
+          ContainerName: portal
+          ContainerPort: 8501
+          TargetGroupArn: !Ref StreamlitTargetGroup
       NetworkConfiguration:
           AwsvpcConfiguration:
             SecurityGroups:
@@ -214,36 +245,6 @@ Resources:
               ContainerPort: 8501
               HostPort: 8501
               Protocol: tcp
-        # -
-        #   Name: legal-nlp
-        #   Essential: false
-        #   Image: !Ref LegalNlpImage
-        #   Environment:
-        #     - Name: PORTAL_SECRETS
-        #       Value: !Ref PortalSecrets
-        #     - Name: AWS_ENV
-        #       Value: !Ref Env
-        #     - Name: FEEDBACK_LOG_GROUP
-        #       Value: !Join [ '', [ !Ref EcsClusterName, -Feedback ] ]
-        #     - Name: FEEDBACK_LOG_STREAM
-        #       Value: !Join [ '', [ !Ref EcsClusterName, -Feedback-logstream ] ]
-        #     - Name: AWS_REGION
-        #       Value: !Ref AWS::Region
-        #     - Name: HUGGING_FACE_HUB_TOKEN
-        #       Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:hugging_face_hub_token}}"
-        #     - Name: RUNPOD_BEARER_TOKEN
-        #       Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:runpod_bearer_token}}"
-        #   LogConfiguration:
-        #       LogDriver: awslogs
-        #       Options:
-        #         awslogs-group: !Ref FargateServiceLogGroup
-        #         awslogs-stream-prefix: legal-nlp-container
-        #         awslogs-region: !Ref AWS::Region
-        #   PortMappings:
-        #     -
-        #       ContainerPort: 8501
-        #       HostPort: 8501
-        #       Protocol: tcp
       Cpu: '256'
       ExecutionRoleArn: !Ref DefaultRole
       Memory: '512'
