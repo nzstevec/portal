@@ -210,6 +210,10 @@ Resources:
               ContainerPort: 8080
               HostPort: 8080
               Protocol: tcp
+            -
+              ContainerPort: 8501
+              HostPort: 8501
+              Protocol: tcp
         # -
         #   Name: legal-nlp
         #   Essential: false

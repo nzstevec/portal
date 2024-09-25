@@ -8,3 +8,19 @@ cachetools
 python-dotenv
 boto3
 pydantic
+# streamlit stuff below
+requests
+streamlit >= 1.37.0
+streamlit_extras
+runpod
+setuptools
+tiktoken
+striprtf
+pypdf
+pymupdf
+docx2txt
+python-docx
+unidecode
+pdfkit
+graphviz
+streamlit-agraph

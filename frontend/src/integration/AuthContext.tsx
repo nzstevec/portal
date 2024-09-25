@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
-import { oidcConfig } from './oidc.config';
+import { oidcConf, oidcConfigLocal } from './oidc.config';
 
 interface AuthContextProps {
   user: User | null;
@@ -16,6 +16,8 @@ const AuthContext = createContext<AuthContextProps>({
 
 export const useAuth = () => useContext(AuthContext);
 
+// const oidcConfig = oidcConfigLocal; // to test locally you need to uncomment this and comment out the next line
+const oidcConfig = oidcConf;
 const issuer = oidcConfig.authority;
 const jwks = `${oidcConfig.authority}/.well-known/jwks.json`;
 const clientId = oidcConfig.client_id;
