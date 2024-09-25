@@ -141,7 +141,7 @@ Resources:
             StatusCode: 404
             ContentType: text/plain
             MessageBody: "Not Found"
-      LoadBalancerArn: !Ref MyLoadBalancer
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 443
       Protocol: HTTPS
       SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
