@@ -160,6 +160,7 @@ Resources:
           QueryStringConfig:
             Values:
               - Key: page
+                Value: "doc-analyst"
       ListenerArn: !Ref HTTPSListener
       Priority: 1
 
