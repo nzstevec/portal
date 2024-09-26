@@ -16,13 +16,13 @@ st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 # Parse the query parameters
 query_params = st.query_params
 print(f"query_params: {query_params}")
-path = query_params.get('page', [''])[0]
+path = query_params.get('page', [''])
 print(f"path: {path}")
 st.write(f"landing page baby")
 st.write(f"query_params: {query_params}")
 st.write(f"path: {path}")
 # Display the corresponding page
-# display_page(path)
+display_page(path)
 
 # Instructions for the user
 # st.sidebar.header("Navigation")

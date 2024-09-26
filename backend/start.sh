@@ -18,7 +18,8 @@ flask run --host=0.0.0.0 --port=8080 &
 child=$!
 
 # Start the Streamlit app
-streamlit run /app/streamlit/landing_page.py   --server.port 8501 --server.headless true
+cd streamlit
+streamlit run landing_page.py   --server.port 8501 --server.headless true
 
 # Wait for the background process to finish
 wait "$child"

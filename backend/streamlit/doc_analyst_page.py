@@ -11,8 +11,8 @@ from gpt.prompts import CHAT_PROMPT_WITH_FILES, CHAT_PROMPT_WITHOUT
 
 logger = logging.getLogger("doc_analyst_page")
 
-SCOTI_AVATAR = "streamlit/static/scoti_avatar.png"
-USER_AVATAR = "streamlit/static/user_avatar.png"
+SCOTI_AVATAR = "static/scoti_avatar.png"
+USER_AVATAR = "static/user_avatar.png"
 
 
 def clear_session_state():
