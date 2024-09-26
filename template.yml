@@ -156,8 +156,10 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref StreamlitTargetGroup
       Conditions:
-        - Field: path-pattern
-          Values: ["/streamlit*"]
+        - Field: query-string
+          QueryStringConfig:
+            Values:
+              - Key: page
       ListenerArn: !Ref HTTPSListener
       Priority: 1
 

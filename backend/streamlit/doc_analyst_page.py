@@ -174,10 +174,10 @@ def side_bar():
 
 def display_doc_analyst_page():
     # Set the page configuration with the sidebar expanded
-    st.set_page_config(
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
+    # st.set_page_config(
+    #     layout="wide",
+    #     initial_sidebar_state="expanded"
+    # )
     init_session_state()
     st.title("🕵️‍♂️ Doc Analyst SCOTi")
     side_bar()

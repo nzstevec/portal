@@ -10,7 +10,7 @@ function DocAnalyst() {
   // const currentProtocol = window.location.protocol;
   // const currentDomain = window.location.hostname;
   // const currentPort = window.location.port ? `:${window.location.port}` : '';
-  const streamlit_doc_analyst_page = 'https://next.scoti.au/streamlit';
+  const streamlit_doc_analyst_page = 'https://next.scoti.au?page=doc-analyst';
 
   // Construct the URL for the iframe
   // DocAnalyst is in a streamlit app on port 8501 in the same container as flask on port 8080
