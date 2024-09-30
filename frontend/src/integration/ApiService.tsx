@@ -1,5 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { config } from './config';
 import FeedbackDto from '../model/FeedbackDto';
+import CreatePresignedUrlDto from '../model/CreatePresignedUrlDto';
+import PresignedUrlDto from '../model/PresignedUrlDto';
 
 // Existing interfaces
 interface User {
@@ -91,13 +94,47 @@ class ApiService {
   async createFeedback(feedbackData: FeedbackDto): Promise<BaseApiResponse> {
     try {
       const response: AxiosResponse<BaseApiResponse> = await this.api.post(
-        '/api/feedback',
+        config.postFeedbackEndpoint,
         feedbackData
       );
       return response.data;
     } catch (error) {
       throw this.normalizeError(error as AxiosError<ApiError>);
     }
+  }
+
+  async createPresignedUrl(createPresignedUrlData: CreatePresignedUrlDto): Promise<PresignedUrlDto> {
+    try {
+      const response: AxiosResponse<PresignedUrlDto> = await this.api.post(
+        config.getPresignedUrlEndpoint,
+        createPresignedUrlData
+      );
+      // const { presignedUrl, fileUrl } = response.data;
+      // const presignedUrlDto = new PresignedUrlDtoImpl(presignedUrl, fileUrl);
+      return response.data;
+    } catch (error) {
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
+  }
+
+  async uploadToPresignedUrl(presignedUrl: string, file: File, setFiles: any): Promise<BaseApiResponse> {
+    try {
+    const response: AxiosResponse<BaseApiResponse> = await axios.put(presignedUrl, file, {
+      headers: {
+        'Content-Type': file.type,
+      },
+      onUploadProgress: (progressEvent) => {
+        const total = progressEvent.total ?? 1;
+        const progress = Math.round((progressEvent.loaded * 100) / total);
+        setFiles((prevFiles: any[]) =>
+          prevFiles.map((f) => (f.file === file ? { ...f, progress } : f))
+        );
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw this.normalizeError(error as AxiosError<ApiError>);
+  }
   }
 }
 

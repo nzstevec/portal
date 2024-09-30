@@ -22,18 +22,8 @@ COPY backend/ .
 
 COPY frontend/build ../frontend/build
 
-# Update package repository and install necessary tools
-RUN apt-get update && apt-get install -y procps
-
-# Copy the start.sh script into the container
-COPY backend/start.sh /usr/local/bin/start.sh
-
-# Make the script executable
-RUN chmod +x /usr/local/bin/start.sh
-
 # Expose the port the application will run on
 EXPOSE 8080
-EXPOSE 8501
 
-# Set the entry point to start.sh
-ENTRYPOINT ["/usr/local/bin/start.sh"]
+# Run the command to start the Flask development server
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]

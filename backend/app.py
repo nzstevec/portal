@@ -1,9 +1,12 @@
 from email.mime.text import MIMEText
 import smtplib
-from flask import Flask, redirect, request, Response, jsonify, send_from_directory
+import uuid
+# from aiohttp import ClientError
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pydantic import ValidationError
 import os
+import boto3
 from datetime import datetime
 import logging
 
@@ -22,6 +25,7 @@ app = Flask(__name__, static_folder='../frontend/build')
 app.config.from_object(Config)
 CORS(app)
 smtp_client = SmtpClient()
+s3_client = boto3.client('s3', region_name=Config.AWS_REGION)
 
 @app.route('/api/feedback', methods=['POST'])
 @check_auth_token
@@ -55,14 +59,49 @@ def feedback(*args, **kw):
         logger.error(f"Error sending email: {feedbackResponse.model_dump_json()}")
         return jsonify(feedbackResponse.model_dump_json()), feedbackResponse.status
 
-# @app.route('/streamlit')
-# def streamlit_redirect():
-#     # redirect /streamlit to the streamlit app on port 8501 in the same container as flask.
-#     # Get the current protocol (http or https)
-#     scheme = request.scheme
-#     # Redirect to the Streamlit app on port 8501
-#     return redirect(f"{scheme}://{request.host.split(':')[0]}:8501")
 
+@app.route('/api/get-presigned-url', methods=['POST'])
+# @check_auth_token
+def get_presigned_url():
+    data = request.get_json()
+
+    # Validate request data
+    userid = data.get('userid')
+    filename = data.get('filename')
+    filetype = data.get('filetype')
+
+    if not userid or not filename or not filetype:
+        return jsonify({'message': 'Missing required fields.'}), 400
+
+    # Generate a unique filename to prevent collisions
+    unique_filename = f"{uuid.uuid4()}-{filename}"
+    file_key = f"{userid}/{unique_filename}"
+
+    try:
+        # Generate presigned URL for PUT operation
+        presigned_url = s3_client.generate_presigned_url(
+            'put_object',
+            Params={
+                'Bucket': Config.FILE_UPLOAD_BUCKET,
+                'Key': file_key,
+                'ContentType': filetype,
+                'ACL': 'public-read'  # Adjust based on your requirements
+            },
+            ExpiresIn=3600  # URL expiration time in seconds
+        )
+
+        # Construct the file URL
+        file_url = f"https://{Config.FILE_UPLOAD_BUCKET}.s3.{Config.AWS_REGION}.amazonaws.com/{file_key}"
+
+        return jsonify({
+            'presignedUrl': presigned_url,
+            'fileUrl': file_url
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Error generating presigned URL: {e}")
+        return jsonify({'message': 'Error generating presigned URL.'}), 500
+    
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

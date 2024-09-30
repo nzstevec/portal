@@ -144,6 +144,7 @@ const AppInner: React.FC = () => {
         </NavList>
       </Navbar>
       <Content>
+        {/* <Sidebar /> */}
         {location.pathname !== '/doc-analyst' && <Sidebar />}
         <MainContent>
           <Routes>

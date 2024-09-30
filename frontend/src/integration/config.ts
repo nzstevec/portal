@@ -19,3 +19,9 @@ export const oidcConfigLocal = {
     scope: 'openid profile email',
     cognito_domain: "https://garib.auth.ap-southeast-2.amazoncognito.com"
   };
+
+export const config = {
+  allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf'],
+  getPresignedUrlEndpoint: '/api/get-presigned-url',
+  postFeedbackEndpoint: '/api/feedback'
+}

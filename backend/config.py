@@ -143,3 +143,5 @@ class Config:
     # Flask Configuration
     SECRET_KEY = load_environment_variable('SECRET_KEY', 'your_secret_key') # os.getenv('SECRET_KEY', 'your_secret_key')
     PORT = int(load_environment_variable('PORT', 8080)) # int(os.getenv('PORT', 8080)) # 8080
+    AWS_REGION = load_environment_variable('AWS_REGION', 'ap-southeast-2')
+    FILE_UPLOAD_BUCKET = load_environment_variable('FILE_UPLOAD_BUCKET', 'your_s3_bucket')

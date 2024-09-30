@@ -68,6 +68,44 @@ Parameters:
 
 Resources:
 
+  FileUploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "file-upload-bucket-${AWS::StackName}-${AWS::AccountId}"
+      LifecycleConfiguration:
+        Rules:
+          - Id: "Delete old files"
+            Status: Enabled
+            ExpirationInDays: 7
+      # NotificationConfiguration:
+      #   QueueConfigurations:
+      #     - Event: s3:ObjectCreated:*
+      #       Queue: !GetAtt QuarantineBucketEventQueue.Arn
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - PUT
+              - POST
+              - DELETE
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders: [ ]
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn: 
@@ -97,41 +135,6 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStack}-vpc-id
 
-  StreamlitTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    DependsOn:
-      - ApplicationLoadBalancer
-    Properties:
-      HealthCheckEnabled: true
-      HealthCheckPort: 8501
-      HealthCheckProtocol: HTTP
-      Port: 8501
-      Protocol: HTTP
-      TargetType: ip
-      VpcId:
-        Fn::ImportValue: !Sub ${VpcStack}-vpc-id
-
-  # ListenerHTTPS:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  #     DefaultActions:
-  #     - Type: "forward"
-  #       TargetGroupArn: !Ref TargetGroup
-  #       ForwardConfig:
-  #         TargetGroupStickinessConfig:
-  #           Enabled: false
-  #           DurationSeconds: 3600
-  #         TargetGroups:
-  #         - TargetGroupArn: !Ref TargetGroup
-  #           Weight: 1
-  #     LoadBalancerArn: !Ref ApplicationLoadBalancer 
-  #     Port: 443
-  #     Certificates:
-  #     - CertificateArn: !Ref NextScotiAuCertificate
-  #     Protocol: HTTPS
-
-  # Define the ALB Listener on port 443 (HTTPS)
   HTTPSListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -148,22 +151,6 @@ Resources:
       Certificates:
         - CertificateArn: !Ref NextScotiAuCertificate
   
-  # Define the listener rules
-  HTTPSListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      Actions:
-        - Type: forward
-          TargetGroupArn: !Ref StreamlitTargetGroup
-      Conditions:
-        - Field: query-string
-          QueryStringConfig:
-            Values:
-              - Key: page
-                Value: "doc-analyst"
-      ListenerArn: !Ref HTTPSListener
-      Priority: 1
-
   HTTPSDefaultRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
@@ -193,10 +180,6 @@ Resources:
           ContainerName: portal
           ContainerPort: 8080
           TargetGroupArn: !Ref TargetGroup
-        -
-          ContainerName: portal
-          ContainerPort: 8501
-          TargetGroupArn: !Ref StreamlitTargetGroup
       NetworkConfiguration:
           AwsvpcConfiguration:
             SecurityGroups:
@@ -233,6 +216,8 @@ Resources:
               Value: !Sub "{{resolve:secretsmanager:${PortalSecrets}:SecretString:hugging_face_hub_token}}"
             - Name: PORT
               Value: 8080
+            - Name: FILE_UPLOAD_BUCKET
+              Value: !Ref FileUploadBucket
           LogConfiguration:
               LogDriver: awslogs
               Options:
@@ -243,10 +228,6 @@ Resources:
             -
               ContainerPort: 8080
               HostPort: 8080
-              Protocol: tcp
-            -
-              ContainerPort: 8501
-              HostPort: 8501
               Protocol: tcp
       Cpu: '256'
       ExecutionRoleArn: !Ref DefaultRole
@@ -284,6 +265,15 @@ Resources:
                   - "logs:GetLogEvents"
                   - "logs:PutLogEvents"
                 Resource: [ "*" ]
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:DeleteObject
+                Resource:
+                  - !GetAtt FileUploadBucket.Arn
+                  - !Sub "${FileUploadBucket.Arn}/*"
 
   EcsCluster:
     Type: AWS::ECS::Cluster
@@ -338,42 +328,6 @@ Resources:
         FromPort: 0
         ToPort: 65535
         CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 22
-      #   ToPort: 22
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 80
-      #   ToPort: 80
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 587
-      #   ToPort: 587
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 8080
-      #   ToPort: 8080
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 8501
-      #   ToPort: 8501
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 8542
-      #   ToPort: 8542
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 2234
-      #   ToPort: 2234
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 2235
-      #   ToPort: 2235
-      #   CidrIp: 0.0.0.0/0
-      # - IpProtocol: tcp
-      #   FromPort: 443
-      #   ToPort: 443
-      #   CidrIp: 0.0.0.0/0
 
   DefaultRole:
     Type: 'AWS::IAM::Role'

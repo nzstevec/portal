@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
-import { oidcConf, oidcConfigLocal } from './oidc.config';
+import { oidcConf, oidcConfigLocal } from './config';
 
 interface AuthContextProps {
   user: User | null;
@@ -89,10 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = () => {
     console.log("login user")
     userManager.signinRedirect()
-    // .then(() => {
-    //     console.log("redirected")
-    //     window.location.href = '/user-notes'
-    // })
     .catch((error) => {
       console.error('Login error:', error);
     });
@@ -128,16 +124,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     const clientId = oidcConfig.client_id;
     const logoutUri = oidcConfig.post_logout_redirect_uri;
-    // console.log("logout user");
-    // logoutUser();
-    // console.log("clearing local storage");
-    // localStorage.clear();
-    // console.log("refreshing page");
-    // window.location.reload();
-    // console.log("clearing stale state");
-    // userManager.clearStaleState().catch((error) => {
-    //   console.error('Logout error in clearStaleState:', error);
-    // })
     console.log("signout redirect");
     userManager.signoutRedirect({
         extraQueryParams: {
@@ -145,17 +131,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout_uri: logoutUri
         }
     })
-    // .then(() => {
-    //     console.log("signout redirect then")
-    //     window.location.href = '/'
-    // })
     .catch((error) => {
       console.error('Logout error in signoutRedirect:', error);
     });
     console.log("logged out")
   };
 
-//   console.log("authcontext.provider with user", user)
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
       {children}
