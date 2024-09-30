@@ -118,6 +118,8 @@ class ApiService {
   }
 
   async uploadToPresignedUrl(presignedUrl: string, file: File, setFiles: any): Promise<BaseApiResponse> {
+    console.log("uploadToPresignedUrl ", presignedUrl);
+    console.log("upload file is ", file);
     try {
     const response: AxiosResponse<BaseApiResponse> = await axios.put(presignedUrl, file, {
       headers: {
@@ -131,8 +133,10 @@ class ApiService {
         );
       },
     });
+    console.log("uploadToPresignedUrl response ", response);
     return response.data;
   } catch (error) {
+    console.log("uploadToPresignedUrl error ", error);
     throw this.normalizeError(error as AxiosError<ApiError>);
   }
   }
