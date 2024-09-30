@@ -84,8 +84,7 @@ def get_presigned_url():
             Params={
                 'Bucket': Config.FILE_UPLOAD_BUCKET,
                 'Key': file_key,
-                'ContentType': filetype,
-                'ACL': 'public-read'  # Adjust based on your requirements
+                'ContentType': filetype
             },
             ExpiresIn=3600  # URL expiration time in seconds
         )
