@@ -14,9 +14,18 @@ const Sidebar = styled.aside`
   background-size: 50%;
 `;
 
-const DocAnalystContainer = styled.div`
+const DocAnalystContent = styled.div`
+  flex: 1;
   width: 100%;
   padding: 20px;
+`;
+
+const FileUploadContainer = styled.div`
+  margin-top: 100px;
+`;
+
+const DocAnalystContainer = styled.div`
+  display: flex;
 `;
 
 function DocAnalyst() {
@@ -24,22 +33,22 @@ function DocAnalyst() {
   const userid = user?.profile?.sub ?? 'unknown';
 
   return (
-    <>
+    <DocAnalystContainer>
       <Sidebar>
-        <div>
+        <FileUploadContainer>
           <h1>Upload Your Files</h1>
           <FileUpload
             userid={userid}
             allowedMimeTypes={config.allowedMimeTypes}
             getPresignedUrlEndpoint={config.getPresignedUrlEndpoint}
           />
-        </div>
+        </FileUploadContainer>
       </Sidebar>
-      <DocAnalystContainer>
+      <DocAnalystContent>
         <h1>Doc Analyst</h1>
         <p>Coming soon...</p>
-      </DocAnalystContainer>
-    </>
+      </DocAnalystContent>
+    </DocAnalystContainer>
   );
 }
 
