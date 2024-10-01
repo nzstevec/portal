@@ -5,6 +5,7 @@ import { useAuth } from '../integration/AuthContext';
 import { config } from '../integration/config';
 
 const Sidebar = styled.aside`
+  display: flex;
   width: 200px;
   background-color: #f0f0f0;
   padding: 20px;
@@ -21,6 +22,7 @@ const DocAnalystContent = styled.div`
 `;
 
 const FileUploadContainer = styled.div`
+  flex: 1;
   margin-top: 100px;
 `;
 
@@ -36,7 +38,7 @@ function DocAnalyst() {
     <DocAnalystContainer>
       <Sidebar>
         <FileUploadContainer>
-          <h1>Upload Your Files</h1>
+          <h4>Please upload all the documents you want SCOTi to know about before starting your chat.</h4>
           <FileUpload
             userid={userid}
             allowedMimeTypes={config.allowedMimeTypes}

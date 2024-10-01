@@ -7,6 +7,36 @@ import BaseApiResponse, { apiService } from '../../integration/ApiService';
 import PresignedUrlDto from '../../model/PresignedUrlDto';
 
 // Styled Components
+
+const FileUploadOuter = styled.div`
+  /* border: 2px dashed #4a90e2; */
+  /* padding: 20px; */
+  text-align: center;
+  /* border-radius: 10px; */
+  cursor: pointer;
+  color: #4a90e2;
+  transition: background-color 0.3s;
+
+  &::after {
+    content: "500K character upload limit (250-350 A4 pages).";
+    position: relative;
+    bottom: 0;
+    left: 0;
+    /* background-color: #333; */
+    /* color: hsl(0, 0%, 3.1372549019607843%); */
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    /* background-color: #fff; */
+  }
+`;
+
 const UploadContainer = styled.div`
   border: 2px dashed #4a90e2;
   padding: 20px;
@@ -15,11 +45,8 @@ const UploadContainer = styled.div`
   cursor: pointer;
   color: #4a90e2;
   transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #f0f8ff;
-  }
 `;
+
 
 const HiddenInput = styled.input`
   display: none;
@@ -108,12 +135,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const uploadFile = async (uploadFile: UploadFile) => {
     const { file } = uploadFile;
     try {
-      // Step 1: Get presigned URL from backend
-      //   const response = await axios.post(getPresignedUrlEndpoint, {
-      //     userid,
-      //     filename: file.name,
-      //     filetype: file.type,
-      //   });
+      // Step 1: Create a presigned URL
       const request = new CreatePresignedUrlDtoImpl(
         userid,
         file.name,
@@ -151,7 +173,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div>
+    <FileUploadOuter>
       <UploadContainer onClick={handleContainerClick}>
         Click or Drag files to upload
         <HiddenInput
@@ -172,7 +194,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           </FileItem>
         ))}
       </FileList>
-    </div>
+    </FileUploadOuter>
   );
 };
 
