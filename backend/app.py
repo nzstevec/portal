@@ -9,7 +9,7 @@ import boto3
 from datetime import datetime
 import logging
 
-from backend.model.query import QueryRequest, QueryResponse
+from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
 from model.feedback import CreateFeedbackRequest, CreateFeedbackResponse
@@ -27,8 +27,8 @@ CORS(app)
 smtp_client = SmtpClient()
 s3_client = boto3.client('s3', region_name=Config.AWS_REGION)
 
-@app.route('/api/feedback', methods=['POST'])
 @check_auth_token
+@app.route('/api/feedback', methods=['POST'])
 def feedback(*args, **kw):
     # logger.info(f"/api/feedback called with headers {request.headers}")
     iso_string = datetime.now().isoformat()
@@ -59,10 +59,9 @@ def feedback(*args, **kw):
         logger.error(f"Error sending email: {feedbackResponse.model_dump_json()}")
         return jsonify(feedbackResponse.model_dump_json()), feedbackResponse.status
 
-
-@app.route('/api/get-presigned-url', methods=['POST'])
 @check_auth_token
-def get_presigned_url():
+@app.route('/api/get-presigned-url', methods=['POST'])
+def get_presigned_url(*args, **kw):
     data = request.get_json()
 
     # Validate request data
@@ -101,10 +100,9 @@ def get_presigned_url():
         app.logger.error(f"Error generating presigned URL: {e}")
         return jsonify({'message': 'Error generating presigned URL.'}), 500
     
-
-@app.route('/api/ai-query', methods=['POST'])
 @check_auth_token
-def ai_query():
+@app.route('/api/ai-query', methods=['POST'])
+def ai_query(*args, **kw):
     data = request.get_json()
     try:
         query_request = QueryRequest(**data)
