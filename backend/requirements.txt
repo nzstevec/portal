@@ -8,3 +8,15 @@ cachetools
 python-dotenv
 boto3
 pydantic
+runpod
+
+# tiktoken
+# striprtf
+# pypdf
+# pymupdf
+# docx2txt
+# python-docx
+# unidecode
+# pdfkit
+# graphviz
+# streamlit-agraph

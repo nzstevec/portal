@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 const AboutContainer = styled.div`
   padding: 20px;
+  margin-left: 200px;
 `;
 
 function About() {

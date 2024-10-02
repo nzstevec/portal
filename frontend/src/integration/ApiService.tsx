@@ -3,6 +3,8 @@ import { config } from './config';
 import FeedbackDto from '../model/FeedbackDto';
 import CreatePresignedUrlDto from '../model/CreatePresignedUrlDto';
 import PresignedUrlDto from '../model/PresignedUrlDto';
+import QueryRequestDto from '../model/QueryRequestDto';
+import QueryResponseDto from '../model/QueryResponseDto';
 
 // Existing interfaces
 interface User {
@@ -89,8 +91,6 @@ class ApiService {
     }
   }
 
-
-  // New method to create feedback
   async createFeedback(feedbackData: FeedbackDto): Promise<BaseApiResponse> {
     try {
       const response: AxiosResponse<BaseApiResponse> = await this.api.post(
@@ -103,7 +103,9 @@ class ApiService {
     }
   }
 
-  async createPresignedUrl(createPresignedUrlData: CreatePresignedUrlDto): Promise<PresignedUrlDto> {
+  async createPresignedUrl(
+    createPresignedUrlData: CreatePresignedUrlDto
+  ): Promise<PresignedUrlDto> {
     try {
       const response: AxiosResponse<PresignedUrlDto> = await this.api.post(
         config.getPresignedUrlEndpoint,
@@ -117,28 +119,51 @@ class ApiService {
     }
   }
 
-  async uploadToPresignedUrl(presignedUrl: string, file: File, setFiles: any): Promise<BaseApiResponse> {
-    console.log("uploadToPresignedUrl ", presignedUrl);
-    console.log("upload file is ", file);
+  async uploadToPresignedUrl(
+    presignedUrl: string,
+    file: File,
+    setFiles: any
+  ): Promise<BaseApiResponse> {
+    console.log('uploadToPresignedUrl ', presignedUrl);
+    console.log('upload file is ', file);
     try {
-    const response: AxiosResponse<BaseApiResponse> = await axios.put(presignedUrl, file, {
-      headers: {
-        'Content-Type': file.type,
-      },
-      onUploadProgress: (progressEvent) => {
-        const total = progressEvent.total ?? 1;
-        const progress = Math.round((progressEvent.loaded * 100) / total);
-        setFiles((prevFiles: any[]) =>
-          prevFiles.map((f) => (f.file === file ? { ...f, progress } : f))
-        );
-      },
-    });
-    console.log("uploadToPresignedUrl response ", response);
-    return response.data;
-  } catch (error) {
-    console.log("uploadToPresignedUrl error ", error);
-    throw this.normalizeError(error as AxiosError<ApiError>);
+      const response: AxiosResponse<BaseApiResponse> = await axios.put(
+        presignedUrl,
+        file,
+        {
+          headers: {
+            'Content-Type': file.type,
+          },
+          onUploadProgress: (progressEvent) => {
+            const total = progressEvent.total ?? 1;
+            const progress = Math.round((progressEvent.loaded * 100) / total);
+            setFiles((prevFiles: any[]) =>
+              prevFiles.map((f) => (f.file === file ? { ...f, progress } : f))
+            );
+          },
+        }
+      );
+      console.log('uploadToPresignedUrl response ', response);
+      return response.data;
+    } catch (error) {
+      console.log('uploadToPresignedUrl error ', error);
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
   }
+
+  async sendQueryRequest(
+    queryRequestDto: QueryRequestDto
+  ): Promise<QueryResponseDto> {
+    try {
+      const response: AxiosResponse<QueryResponseDto> = await this.api.post(
+        config.postAiQueryEndpoint,
+        queryRequestDto
+      );
+
+      return response.data;
+    } catch (error) {
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
   }
 }
 

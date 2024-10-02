@@ -1,10 +1,11 @@
 // FileUpload.tsx
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useContext } from 'react';
 import styled from 'styled-components';
 import CreatePresignedUrlDtoImpl from '../../model/CreatePresignedUrlDto';
 import BaseApiResponse, { apiService } from '../../integration/ApiService';
 import PresignedUrlDto from '../../model/PresignedUrlDto';
+import { FileContext } from '../../integration/FileContext';
 
 // Styled Components
 
@@ -104,6 +105,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const filenamesContext = useContext(FileContext);
+
+  if (!filenamesContext) {
+    throw new Error("FileUpload must be used within a FileContextProvider");
+  }
+
+  const { filenames, setFilenames } = filenamesContext;
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -130,6 +138,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     // Upload each file
     newFiles.forEach(uploadFile);
+    if (files.length > 0) {
+      const names = Array.from(files).map(file => file.file.name).join(', ');
+      setFilenames(names);
+    }
   };
 
   const uploadFile = async (uploadFile: UploadFile) => {

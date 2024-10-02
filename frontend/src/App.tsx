@@ -19,6 +19,7 @@ import About from './pages/About';
 import Feedback from './pages/Feedback';
 import DocAnalyst from './pages/DocAnalyst';
 import Callback from './pages/Callback';
+import { FileProvider } from './integration/FileContext';
 
 // Styled components
 const AppContainer = styled.div`
@@ -38,6 +39,13 @@ const MainContent = styled.main`
 `;
 
 const Navbar = styled.nav`
+  position: fixed;
+  left: 230px;
+  overflow: hidden;
+  text-align: center;
+  font-size: small;
+  height: 12px;
+  width: 90vw;
   background-color: #333;
   padding: 10px;
 `;
@@ -51,7 +59,7 @@ const NavList = styled.ul`
 `;
 
 const NavItem = styled.li`
-  margin: 0 10px;
+  margin: 0;
 `;
 
 interface NavLinkProps {
@@ -68,7 +76,13 @@ const NavLink = styled(Link)<NavLinkProps>`
 `;
 
 const Sidebar = styled.aside`
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
   width: 200px;
+  height: 100vh;
+  /* border-right: 1px solid #ccc; */
   background-color: #f0f0f0;
   padding: 20px;
   background-image: url('scoti_logo.gif');
@@ -78,6 +92,12 @@ const Sidebar = styled.aside`
 `;
 
 const StatusBar = styled.footer`
+  position: fixed;
+  bottom: 0;
+  text-align: center;
+  font-size: small;
+  width: 100%;
+  height: 10px;
   background-color: #333;
   color: white;
   padding: 10px;
@@ -127,15 +147,10 @@ const AppInner: React.FC = () => {
               Feedback
             </NavLink>
           </NavItem>
-          <NavItem>
+          <NavItem style={{ marginTop: '-5px' }}>
             <NavLink to="#" isActive={false}>
               {user ? (
-                <>
-                  <span style={{ marginRight: '1rem' }}>
-                    {user.profile?.email}
-                  </span>
-                  <button onClick={logout}>Logout</button>
-                </>
+                <button onClick={logout}>Logout</button>
               ) : (
                 <button onClick={login}>Login</button>
               )}
@@ -199,7 +214,7 @@ const AppInner: React.FC = () => {
       <StatusBar>
         {user ? (
           <>
-            <span>{user.profile?.email} logged in | © 2024 SCOTi Sandbox</span>
+            <span>{user.profile?.name} logged in | © 2024 SCOTi Sandbox</span>
           </>
         ) : (
           <span>
@@ -214,9 +229,11 @@ const AppInner: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <AppInner />
-      </Router>
+      <FileProvider>
+        <Router>
+          <AppInner />
+        </Router>
+      </FileProvider>
     </AuthProvider>
   );
 };

@@ -24,7 +24,7 @@ const Select = styled.select`
   border-radius: 4px;
   padding: 0 8px; */
   /* margin-bottom: 16px; */
-  width: 100%;
+  width: max-content;
   background-color: rgba(49, 51, 63, 0.2);
 `;
 

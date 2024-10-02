@@ -17,6 +17,7 @@ Access to this sandbox is restricted to users with an account. If you do not hav
 
 const UnauthenticatedContainer = styled.div`
   padding: 20px 80px;
+  margin-left: 200px;
 `;
 
 function UnAuthenticated() {

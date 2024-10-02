@@ -23,5 +23,6 @@ export const oidcConfigLocal = {
 export const config = {
   allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf'],
   getPresignedUrlEndpoint: '/api/get-presigned-url',
-  postFeedbackEndpoint: '/api/feedback'
+  postFeedbackEndpoint: '/api/feedback',
+  postAiQueryEndpoint: '/api/ai-query'
 }

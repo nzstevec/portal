@@ -46,13 +46,15 @@ h.	To start again with a different document to audit, select the radio button in
 `;
 
 const UserNotesContainer = styled.div`
-  padding: 20px 80px;
+  padding: 20px;
+  margin-left: 200px;
 `;
 
 function UserNotes() {
   console.log('User Notes');
   return (
     <UserNotesContainer>
+      <h1>User Notes</h1>
       <Expander title={'Welcome'} initialyExpanded={true}>
         <ReactMarkdown>{welcome}</ReactMarkdown>
       </Expander>

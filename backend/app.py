@@ -1,7 +1,6 @@
 from email.mime.text import MIMEText
 import smtplib
 import uuid
-# from aiohttp import ClientError
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pydantic import ValidationError
@@ -10,6 +9,7 @@ import boto3
 from datetime import datetime
 import logging
 
+from backend.model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
 from model.feedback import CreateFeedbackRequest, CreateFeedbackResponse
@@ -61,7 +61,7 @@ def feedback(*args, **kw):
 
 
 @app.route('/api/get-presigned-url', methods=['POST'])
-# @check_auth_token
+@check_auth_token
 def get_presigned_url():
     data = request.get_json()
 
@@ -100,6 +100,33 @@ def get_presigned_url():
     except Exception as e:
         app.logger.error(f"Error generating presigned URL: {e}")
         return jsonify({'message': 'Error generating presigned URL.'}), 500
+    
+
+@app.route('/api/ai-query', methods=['POST'])
+@check_auth_token
+def ai_query():
+    data = request.get_json()
+    try:
+        query_request = QueryRequest(**data)
+    except ValidationError as e:
+        return jsonify({'message': 'Invalid request data'}), 400  
+
+    try:
+        logger.info(f"AI Query: userid: {query_request.userid}, user_input: {query_request.user_input}, template_name: {query_request.template_name}, file_names: {query_request.file_names}")
+        query_response = QueryResponse()
+        query_response.received = datetime.now().isoformat()
+        query_response.status = '200'
+        query_response.ai_response = f"I dont know the answer to [{query_request.user_input}]"
+
+        return query_response.model_dump_json(), 200
+
+    except Exception as e:
+        app.logger.error(f"Error generating ai query response: {e}")
+        query_response = QueryResponse()
+        query_response.received = datetime.now().isoformat()
+        query_response.status = '500'
+        query_response.ai_response = f"something went wrong: {e}"
+        return query_response.model_dump_json(), 500
     
 
 @app.route('/', defaults={'path': ''})

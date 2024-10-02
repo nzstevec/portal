@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { IoMdSend } from "react-icons/io";
 import Selectbox from '../components/ui/Selectbox';
 import BaseApiResponse, { apiService } from '../integration/ApiService';
 import FeedbackDtoImpl from '../model/FeedbackDto';
@@ -11,12 +12,14 @@ interface FormData {
 
 const FeedbackContainer = styled.div`
   padding: 20px;
+  margin-left: 200px;
 `;
 
 const FormContainer = styled.form`
   border: 1px solid rgba(46, 45, 144, 0.855);
   border-radius: 4px;
   padding: 16px;
+  max-width: 90%;
   /* margin-bottom: 16px; */
   display: flex;
   flex-direction: column;
@@ -31,6 +34,7 @@ const Button = styled.button`
   border-radius: 4px;
   width: max-content;
   cursor: pointer;
+  align-self: flex-end;
 `;
 
 const TextArea = styled.textarea`
@@ -80,7 +84,7 @@ function Feedback() {
 
   return (
     <FeedbackContainer>
-      <h1>🗩 Feedback</h1>
+      <h1>Feedback</h1>
       <FormContainer onSubmit={handleSubmit}>
         <Selectbox
           key={key}
@@ -101,7 +105,7 @@ function Feedback() {
           }
         />
         <Button type="submit" disabled={submitting}>
-          Submit
+          <IoMdSend />
         </Button>
       </FormContainer>
     </FeedbackContainer>
