@@ -3,11 +3,11 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class QueryRequest(BaseModel):
-    sent: datetime
-    userid: str
-    file_names: str
-    user_input: str
-    template_name: str
+    sent: datetime = datetime.now()
+    userid: str = ''
+    file_names: str = ''
+    user_input: str = ''
+    template_name: str = ''
 
     class Config:
         json_schema_extra = {
@@ -21,9 +21,9 @@ class QueryRequest(BaseModel):
         }
 
 class QueryResponse(BaseModel):
-    received: datetime
-    status: str
-    ai_response: str
+    received: datetime = datetime.now()
+    status: str = ''
+    ai_response: str = ''
 
     class Config:
         json_schema_extra = {
@@ -43,4 +43,7 @@ if __name__ == '__main__':
     create = QueryRequest(**{"sent": "2022-01-01T00:00:00","userid": "292e5448-b001-70cb-1582-4599f2239de5","file_names": "file1.txt,file2.txt", "user_input": "what is the meaning of life", "template_name": "doc_analyst"}) 
     print(create.model_dump_json())
     response = QueryResponse(**{"received": "2022-01-01T00:00:00", "status": "200", "ai_response": "47 is the meaning of life"})
-    print(response.model_dump_json())     
+    print(response.model_dump_json())  
+    response2 = QueryResponse()
+    response2.status = "200"  
+    print(response2.model_dump_json()) 
