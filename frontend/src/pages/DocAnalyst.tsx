@@ -115,7 +115,7 @@ function DocAnalyst() {
     apiService.sendQueryRequest(request)
     .then((response) => {
       console.log(response);
-      if (response instanceof QueryResponseDto) {
+      if (response instanceof QueryResponseDtoImpl) {
         const newMessage: ChatMessage = {
           id: (messages.length + 1).toString(),
           text: response.ai_response,

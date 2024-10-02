@@ -76,7 +76,7 @@ Resources:
         Rules:
           - Id: "Delete old files"
             Status: Enabled
-            ExpirationInDays: 7
+            ExpirationInDays: 1
       # NotificationConfiguration:
       #   QueueConfigurations:
       #     - Event: s3:ObjectCreated:*

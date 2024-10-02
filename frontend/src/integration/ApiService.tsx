@@ -5,6 +5,7 @@ import CreatePresignedUrlDto from '../model/CreatePresignedUrlDto';
 import PresignedUrlDto from '../model/PresignedUrlDto';
 import QueryRequestDto from '../model/QueryRequestDto';
 import QueryResponseDto from '../model/QueryResponseDto';
+import QueryResponseDtoImpl from '../model/QueryResponseDto';
 
 // Existing interfaces
 interface User {
@@ -160,7 +161,9 @@ class ApiService {
         queryRequestDto
       );
 
-      return response.data;
+      const data = response.data;
+      return new QueryResponseDtoImpl(data.received, data.status, data.ai_response);
+
     } catch (error) {
       throw this.normalizeError(error as AxiosError<ApiError>);
     }
