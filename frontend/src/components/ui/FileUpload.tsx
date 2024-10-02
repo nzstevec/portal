@@ -165,7 +165,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
         .catch((error: BaseApiResponse) => {
           console.error(error);
         });
-
+        const newFilenames = filenames ? file.name : filenames + ', ' + file.name;
+        setFilenames(newFilenames)
       // Optionally, you can store the fileUrl or perform further actions
     } catch (err: any) {
       console.error(err);

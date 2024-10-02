@@ -114,6 +114,7 @@ function DocAnalyst() {
     );
     apiService.sendQueryRequest(request)
     .then((response) => {
+      console.log(response);
       if (response instanceof QueryResponseDto) {
         const newMessage: ChatMessage = {
           id: (messages.length + 1).toString(),
@@ -121,7 +122,9 @@ function DocAnalyst() {
           avatar: scoti_avatar,
           sender: 'bot',
         };
+        console.log(newMessage);
         setMessages([...messages, newMessage]);
+        console.log(messages);
       }
     })
     .catch((error) => {
