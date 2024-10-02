@@ -104,7 +104,7 @@ function DocAnalyst() {
       avatar: user_avatar,
       sender: 'user',
     };
-    setMessages([...messages, newMessage]);
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputValue('');
     const request = new QueryRequestDto(
       userid,
@@ -117,13 +117,13 @@ function DocAnalyst() {
       console.log(response);
       if (response instanceof QueryResponseDtoImpl) {
         const newMessage: ChatMessage = {
-          id: (messages.length + 1).toString(),
+          id: (messages.length + 2).toString(),
           text: response.ai_response,
           avatar: scoti_avatar,
           sender: 'bot',
         };
         console.log(newMessage);
-        setMessages([...messages, newMessage]);
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
         console.log(messages);
       }
     })
