@@ -28,17 +28,21 @@ const Sidebar = styled.aside`
   top: 0;
   left: 0;
   display: flex;
-  width: 200px;
+  width: 10vw;
+  min-width: 150px;
   height: 100vh;
+  /* border-right: 1px solid #ccc; */
   background-color: #f0f0f0;
   padding: 20px;
   background-image: url('scoti_logo.gif');
   background-repeat: no-repeat;
   background-position: top -20px right 50%;
   background-size: 50%;
-`;
+`; 
 
 const DocAnalystContent = styled.div`
+  display: flex;
+  flex-direction: column;
   flex: 1;
   width: 100%;
   /* padding: 20px; */
@@ -57,16 +61,17 @@ const DocAnalystContainer = styled.div`
 `;
 
 const ChatInput = styled.div`
-  width: 100%;
+  width: 100vw;
   position: fixed;
-  bottom: 40px;
+  bottom: 20px;
   display: flex;
-  gap: 5px;
-  padding: 20px;
+  gap: 10px;
+  padding: 20px 10px 20px 0px;
+  flex: 1;
 `;
 
 const Input = styled.input`
-  width: 70%;
+  width: 71%;
 `;
 
 const Button = styled.button`
@@ -75,7 +80,7 @@ const Button = styled.button`
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
-  width: max-content;
+  width: 50px;
   cursor: pointer;
   align-self: flex-end;
 `;
@@ -155,8 +160,8 @@ function DocAnalyst() {
         </FileUploadContainer>
       </Sidebar>
       <DocAnalystContent>
-        <h1>Doc Analyst</h1>
-        <p>Chat History</p>
+        {/* <h1>Doc Analyst</h1> */}
+        <h3>Chat History</h3>
         <ChatHistory messages={messages} />
         <ChatInput>
           <Input

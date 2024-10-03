@@ -373,10 +373,6 @@ def summarize_list_of_text(input_text_chunks: list[str], **runpod_credentials) -
     for index, input_text_chunk in enumerate(input_text_chunks):
         # Firstly, let's only pass in up to 4k tokens at a time. We will use a 500 token overlap
         input_text_chunk_tokens = encoding.encode(input_text_chunk)
-        st.toast(
-            f"Producing summaries for input chunk {index+1} of {len(input_text_chunks)}",
-            icon="✏️",
-        )
 
         input_text_chunk_sub_chunks = [
             encoding.decode(input_text_chunk_tokens[i : i + 6000])

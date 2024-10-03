@@ -47,7 +47,7 @@ const Navbar = styled.nav`
   height: 12px;
   width: 90vw;
   background-color: #333;
-  padding: 10px;
+  padding: 5px 10px 10px 10px;
 `;
 
 const NavList = styled.ul`
@@ -69,6 +69,8 @@ interface NavLinkProps {
 const NavLink = styled(Link)<NavLinkProps>`
   color: ${(props) =>
     props.isActive ? '#FFD700' : 'white'}; /* Highlight active link */
+  font-size-adjust: ${(props) =>
+    props.isActive ? '.7' : '.6'};
   text-decoration: none;
   &:hover {
     text-decoration: underline;
@@ -80,7 +82,8 @@ const Sidebar = styled.aside`
   top: 0;
   left: 0;
   display: flex;
-  width: 200px;
+  width: 10vw;
+  min-width: 150px;
   height: 100vh;
   /* border-right: 1px solid #ccc; */
   background-color: #f0f0f0;
@@ -147,7 +150,7 @@ const AppInner: React.FC = () => {
               Feedback
             </NavLink>
           </NavItem>
-          <NavItem style={{ marginTop: '-5px' }}>
+          <NavItem style={{ marginTop: '-2px' }}>
             <NavLink to="#" isActive={false}>
               {user ? (
                 <button onClick={logout}>Logout</button>

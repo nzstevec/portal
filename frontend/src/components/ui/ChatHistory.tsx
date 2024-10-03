@@ -9,14 +9,15 @@ export interface ChatMessage {
 }
 
 export const ChatContainer = styled.div`
-  width: 100%;
+  width: 70vw;
   /* max-width: 80vh; */
   border-radius: 8px;
   background-color: #f9f9f9;
-  max-height: 75vh; /* Adjust as needed */
+  max-height: 71vh; 
   overflow-y: auto;
   padding: 10px;
   border: 1px solid #ccc;
+  flex: 1;
 `;
 
 export const MessageWrapper = styled.div<{ sender?: 'user' | 'bot' }>`

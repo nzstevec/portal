@@ -9,7 +9,7 @@ const AboutContainer = styled.div`
 function About() {
   return (
       <AboutContainer>
-        <h1>About Us</h1>
+        {/* <h1>About Us</h1> */}
         <p>Learn more about our company and mission.</p>
       </AboutContainer>
   );

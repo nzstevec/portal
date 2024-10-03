@@ -128,6 +128,10 @@ def load_environment_variable(key: str, default: str = None) -> str:
     value = os.environ.get(key)
     logger.info(f"Loading ENV VARIABLE {key} from OS ENVIRONMENT")
     if value is None:
+        load_dotenv(override=True)
+        value = os.environ.get(key)
+        logger.info(f"Loading ENV VARIABLE {key} from DOTENV")
+    if value is None:
         value = default
         logger.error(f"No ENV VARIABLE has been found for {key} so defaulting to {default}")
     return value

@@ -1,14 +1,13 @@
-from email.mime.text import MIMEText
-import smtplib
-import uuid
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pydantic import ValidationError
 import os
-import boto3
 from datetime import datetime
 import logging
 
+from service.doc_analyst import send_chat_message
+from gpt.parsing import process_files
+from service import s3_client
 from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
@@ -25,7 +24,6 @@ app = Flask(__name__, static_folder='../frontend/build')
 app.config.from_object(Config)
 CORS(app)
 smtp_client = SmtpClient()
-s3_client = boto3.client('s3', region_name=Config.AWS_REGION)
 
 @check_auth_token
 @app.route('/api/feedback', methods=['POST'])
@@ -72,24 +70,9 @@ def get_presigned_url(*args, **kw):
     if not userid or not filename or not filetype:
         return jsonify({'message': 'Missing required fields.'}), 400
 
-    # Generate a unique filename to prevent collisions
-    unique_filename = f"{uuid.uuid4()}-{filename}"
-    file_key = f"{userid}/{unique_filename}"
-
     try:
         # Generate presigned URL for PUT operation
-        presigned_url = s3_client.generate_presigned_url(
-            'put_object',
-            Params={
-                'Bucket': Config.FILE_UPLOAD_BUCKET,
-                'Key': file_key,
-                'ContentType': filetype
-            },
-            ExpiresIn=3600  # URL expiration time in seconds
-        )
-
-        # Construct the file URL
-        file_url = f"https://{Config.FILE_UPLOAD_BUCKET}.s3.{Config.AWS_REGION}.amazonaws.com/{file_key}"
+        presigned_url, file_url = s3_client.get_presigned_url(userid, filename, filetype)
 
         return jsonify({
             'presignedUrl': presigned_url,
@@ -111,10 +94,26 @@ def ai_query(*args, **kw):
 
     try:
         logger.info(f"AI Query: userid: {query_request.userid}, user_input: {query_request.user_input}, template_name: {query_request.template_name}, file_names: {query_request.file_names}")
+        download_urls = s3_client.get_download_urls(query_request.userid, query_request.file_names)
+        uploaded_files = []
+        for download_url in download_urls:
+            logger.info(f"download_url = {download_url}")
+            file_like_object = s3_client.get_file_like_object_from_s3(download_url)
+            uploaded_files.append(file_like_object)
+        logger.info(f"first 50 chars of file contents: {uploaded_files[:50]}") 
+        file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
+        logger.info(f"Total tokens: {total_tokens}")
+
+        if total_tokens > 60000:
+            logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
+
+        messages = [{"role": "user", "content": query_request.user_input}]
+        response = send_chat_message(messages, "nothing uploaded", file_contents)
+        logger.info(f"AI Query response: {response}")
         query_response = QueryResponse()
         query_response.received = datetime.now().isoformat()
         query_response.status = '200'
-        query_response.ai_response = f"I dont know the answer to [{query_request.user_input}]"
+        query_response.ai_response = response
 
         return query_response.model_dump_json(), 200
 

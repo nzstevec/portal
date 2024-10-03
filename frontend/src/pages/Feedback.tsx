@@ -84,7 +84,7 @@ function Feedback() {
 
   return (
     <FeedbackContainer>
-      <h1>Feedback</h1>
+      {/* <h1>Feedback</h1> */}
       <FormContainer onSubmit={handleSubmit}>
         <Selectbox
           key={key}

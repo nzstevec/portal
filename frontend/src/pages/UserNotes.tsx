@@ -54,7 +54,7 @@ function UserNotes() {
   console.log('User Notes');
   return (
     <UserNotesContainer>
-      <h1>User Notes</h1>
+      {/* <h1>User Notes</h1> */}
       <Expander title={'Welcome'} initialyExpanded={true}>
         <ReactMarkdown>{welcome}</ReactMarkdown>
       </Expander>
