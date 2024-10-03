@@ -7,7 +7,7 @@ import logging
 
 from service.doc_analyst import send_chat_message
 from gpt.parsing import process_files
-from service import s3_client
+from service.s3_client import s3_client
 from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
