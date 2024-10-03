@@ -1,5 +1,5 @@
 from openai import OpenAI
-from backend.config import load_environment_variable
+from config import load_environment_variable
 
 
 def invoke_openai_directly(query):

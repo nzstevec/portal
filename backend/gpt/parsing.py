@@ -11,7 +11,7 @@ import docx2txt
 import tiktoken
 from striprtf.striprtf import rtf_to_text
 
-from backend.gpt.prompts import (
+from gpt.prompts import (
     summarization_prompt_rimon_specific,
     summarization_prompt_rimon_specific_new,
     summarization_prompt_rimon_specific_json_style,
