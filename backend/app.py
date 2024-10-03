@@ -94,12 +94,15 @@ def ai_query_route(*args, **kw):
 
     try:
         logger.info(f"AI Query: userid: {query_request.userid}, user_input: {query_request.user_input}, template_name: {query_request.template_name}, file_names: {query_request.file_names}")
-        download_urls = get_download_urls(query_request.userid, query_request.file_names)
+        download_urls, file_keys = get_download_urls(query_request.userid, query_request.file_names)
         uploaded_files = []
-        for download_url in download_urls:
+        for download_url, file_key in zip(download_urls, file_keys):
             logger.info(f"download_url = {download_url}")
             file_like_object = get_file_like_object_from_s3(download_url)
+            file_like_object.name = file_key
             uploaded_files.append(file_like_object)
+
+
         logger.info(f"first 50 chars of file contents: {uploaded_files[:50]}") 
         file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
         logger.info(f"Total tokens: {total_tokens}")

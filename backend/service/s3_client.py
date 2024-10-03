@@ -61,7 +61,7 @@ def get_download_urls(userid, filenames):
         file_url = get_presigned_download_url(file_key)
         download_urls.append(file_url)
     
-    return download_urls
+    return download_urls, matching_file_keys
 
 def get_file_like_object_from_s3(download_url):
     
@@ -74,11 +74,13 @@ def get_file_like_object_from_s3(download_url):
 if __name__ == "__main__":
     print(f"fileuploadbucket = {Config.FILE_UPLOAD_BUCKET}")
 
-    download_urls = get_download_urls("292e5448-b001-70cb-1582-4599f2239de5/", "INV-05009.pdf")
-    for download_url in download_urls:
+    download_urls, file_keys = get_download_urls("292e5448-b001-70cb-1582-4599f2239de5/", "2. Mr Ashish George.pdf")
+    for download_url, file_key in zip(download_urls, file_keys):
         print(f"download_url = {download_url}")
         file_like_object = get_file_like_object_from_s3(download_url)
+        file_like_object.name = "2. Mr Ashish George.pdf"
         print(f"file contents: {file_like_object.getvalue()[:50]}")
+        print(f"file name: {file_like_object.name}")
 
 
 
