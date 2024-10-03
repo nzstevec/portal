@@ -136,6 +136,7 @@ def load_environment_variable(key: str, default: str = None) -> str:
         logger.error(f"No ENV VARIABLE has been found for {key} so defaulting to {default}")
     return value
 
+load_environment_variables()
 
 runpod_credentials_chat = {
     "runpod_pod_id": load_environment_variable("doc_analyst_runpod_pod_id"),
