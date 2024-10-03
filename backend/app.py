@@ -7,7 +7,7 @@ import logging
 
 from service.doc_analyst import send_chat_message
 from gpt.parsing import process_files
-from service.s3_client import s3_client
+from service.s3_client import get_download_urls, get_file_like_object_from_s3, get_presigned_url
 from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
@@ -72,7 +72,7 @@ def get_presigned_url(*args, **kw):
 
     try:
         # Generate presigned URL for PUT operation
-        presigned_url, file_url = s3_client.get_presigned_url(userid, filename, filetype)
+        presigned_url, file_url = get_presigned_url(userid, filename, filetype)
 
         return jsonify({
             'presignedUrl': presigned_url,
@@ -94,11 +94,11 @@ def ai_query(*args, **kw):
 
     try:
         logger.info(f"AI Query: userid: {query_request.userid}, user_input: {query_request.user_input}, template_name: {query_request.template_name}, file_names: {query_request.file_names}")
-        download_urls = s3_client.get_download_urls(query_request.userid, query_request.file_names)
+        download_urls = get_download_urls(query_request.userid, query_request.file_names)
         uploaded_files = []
         for download_url in download_urls:
             logger.info(f"download_url = {download_url}")
-            file_like_object = s3_client.get_file_like_object_from_s3(download_url)
+            file_like_object = get_file_like_object_from_s3(download_url)
             uploaded_files.append(file_like_object)
         logger.info(f"first 50 chars of file contents: {uploaded_files[:50]}") 
         file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
