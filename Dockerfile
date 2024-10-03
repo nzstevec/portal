@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code to the working directory
 COPY backend/ .
 
+# Install the package in editable mode
+RUN python -m pip install -e .
+
 COPY frontend/build ../frontend/build
 
 # Expose the port the application will run on

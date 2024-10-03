@@ -4,7 +4,7 @@ Functions for making runpod calls, and getting the GPT response
 
 import runpod
 from config import load_environment_variable, logger
-from openai_client import invoke_openai_directly
+from service.openai_client import invoke_openai_directly
 
 def runpod_sync_call(name, query):
     runpod.api_key = load_environment_variable("runpod_bearer_token")
