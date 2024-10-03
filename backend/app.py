@@ -27,7 +27,7 @@ smtp_client = SmtpClient()
 
 @check_auth_token
 @app.route('/api/feedback', methods=['POST'])
-def feedback(*args, **kw):
+def feedback_route(*args, **kw):
     # logger.info(f"/api/feedback called with headers {request.headers}")
     iso_string = datetime.now().isoformat()
     if "auth_error" in kw:
@@ -59,7 +59,7 @@ def feedback(*args, **kw):
 
 @check_auth_token
 @app.route('/api/get-presigned-url', methods=['POST'])
-def get_presigned_url(*args, **kw):
+def get_presigned_url_route(*args, **kw):
     data = request.get_json()
 
     # Validate request data
@@ -85,7 +85,7 @@ def get_presigned_url(*args, **kw):
     
 @check_auth_token
 @app.route('/api/ai-query', methods=['POST'])
-def ai_query(*args, **kw):
+def ai_query_route(*args, **kw):
     data = request.get_json()
     try:
         query_request = QueryRequest(**data)
