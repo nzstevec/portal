@@ -32,7 +32,7 @@ class ApiService {
   constructor() {
     this.api = axios.create({
       baseURL: origin,
-      timeout: 10000,
+      timeout: 180000,
       headers: {
         'Content-Type': 'application/json',
       },
