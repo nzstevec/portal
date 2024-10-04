@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import ReactMarkdown from 'react-markdown';
 
 export interface ChatMessage {
   id: string;
@@ -76,7 +77,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   return (
     <MessageWrapper sender={message.sender}>
       <Avatar src={message.avatar} alt="avatar" />
-      <MessageContent sender={message.sender}>{message.text}</MessageContent>
+      <MessageContent sender={message.sender}>
+        <ReactMarkdown>{message.text}</ReactMarkdown>
+      </MessageContent>
     </MessageWrapper>
   );
 };
