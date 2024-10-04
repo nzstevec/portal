@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class QueryRequest(BaseModel):
-    sent: datetime = datetime.now()
+    sent: str = datetime.now().isoformat()
     userid: str = ''
     file_names: str = ''
     user_input: str = ''
@@ -21,7 +21,7 @@ class QueryRequest(BaseModel):
         }
 
 class QueryResponse(BaseModel):
-    received: datetime = datetime.now()
+    received: str = datetime.now().isoformat()
     status: str = ''
     ai_response: str = ''
 

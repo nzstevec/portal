@@ -90,20 +90,27 @@ def ai_query_route(*args, **kw):
     try:
         query_request = QueryRequest(**data)
     except ValidationError as e:
-        return jsonify({'message': 'Invalid request data'}), 400  
+        logger.error(f"Validation error: {str(e)}")
+        return jsonify({'message': 'Invalid request data', 'details': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Unexpected error during request parsing: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
 
     try:
         logger.info(f"AI Query: userid: {query_request.userid}, user_input: {query_request.user_input}, template_name: {query_request.template_name}, file_names: {query_request.file_names}")
         download_urls, file_keys = get_download_urls(query_request.userid, query_request.file_names)
         uploaded_files = []
         for download_url, file_key in zip(download_urls, file_keys):
-            logger.info(f"download_url = {download_url}")
-            file_like_object = get_file_like_object_from_s3(download_url)
-            file_like_object.name = file_key
-            uploaded_files.append(file_like_object)
+            try:
+                logger.info(f"Fetching from URL: {download_url}")
+                file_like_object = get_file_like_object_from_s3(download_url)
+                file_like_object.name = file_key
+                uploaded_files.append(file_like_object)
+            except Exception as e:
+                logger.error(f"Failed to fetch or process the file at {download_url}: {str(e)}")
+                continue
 
-
-        logger.info(f"first 50 chars of file contents: {uploaded_files[:50]}") 
+        logger.debug(f"First 50 chars of first 5 file contents: {[f.read(50) for f in uploaded_files[:5]]}") 
         file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
         logger.info(f"Total tokens: {total_tokens}")
 
@@ -111,23 +118,25 @@ def ai_query_route(*args, **kw):
             logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
 
         messages = [{"role": "user", "content": query_request.user_input}]
-        logger.info(f"AI Query: {messages}")
+        logger.info(f"Sending AI Query: {messages}")
         response = send_chat_message(messages, "nothing uploaded", file_contents)
-        logger.info(f"AI Query response: {response}")
-        query_response = QueryResponse()
-        query_response.received = datetime.now().isoformat()
-        query_response.status = '200'
-        query_response.ai_response = response
+        logger.info(f"Received AI response: {response}")
 
-        return query_response.model_dump_json(), 200
+        query_response = QueryResponse(
+            received=datetime.now().isoformat(),
+            status='200',
+            ai_response=response
+        )
+        return jsonify(query_response.model_dump_json()), 20
 
     except Exception as e:
         app.logger.error(f"Error generating ai query response: {e}")
-        query_response = QueryResponse()
-        query_response.received = datetime.now().isoformat()
-        query_response.status = '500'
-        query_response.ai_response = f"something went wrong: {e}"
-        return query_response.model_dump_json(), 500
+        query_response = QueryResponse(
+            received = datetime.now().isoformat(),
+            status = '500',
+            ai_response = f"Internal server error: {e}"
+        )
+        return jsonify(query_response.model_dump_json()), 500
     
 
 @app.route('/', defaults={'path': ''})
