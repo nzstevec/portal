@@ -49,4 +49,5 @@ if __name__ == '__main__':
             status='200',
             ai_response="blah blah blah"
         )
-    print(query_response.model_dump_json()) 
+    dict = query_response.model_dump()
+    print(dict) 

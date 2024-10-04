@@ -127,7 +127,7 @@ def ai_query_route(*args, **kw):
             status='200',
             ai_response=response
         )
-        query_response_dict = query_response.to_dict()
+        query_response_dict = query_response.model_dump()
         logger.info(f"Returning AI response: {query_response_dict}")
         return jsonify(query_response_dict), 200
 
@@ -138,7 +138,7 @@ def ai_query_route(*args, **kw):
             status = '500',
             ai_response = f"Internal server error: {e}"
         )
-        query_response_dict = query_response.to_dict()
+        query_response_dict = query_response.model_dump()
         return jsonify(query_response_dict), 500
     
 
