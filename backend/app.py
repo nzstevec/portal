@@ -127,7 +127,7 @@ def ai_query_route(*args, **kw):
             status='200',
             ai_response=response
         )
-        return jsonify(query_response.model_dump_json()), 20
+        return jsonify(query_response.model_dump_json()), 200
 
     except Exception as e:
         app.logger.error(f"Error generating ai query response: {e}")
