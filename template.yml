@@ -120,6 +120,9 @@ Resources:
         - Fn::ImportValue: !Sub ${VpcStack}-public-subnet-a-id
         - Fn::ImportValue: !Sub ${VpcStack}-public-subnet-b-id
       Type: application
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '180'
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
