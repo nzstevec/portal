@@ -123,20 +123,21 @@ def ai_query_route(*args, **kw):
         logger.info(f"Received AI response: {response}")
 
         query_response = QueryResponse(
-            received=datetime.now().isoformat(),
+            # received=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             status='200',
             ai_response=response
         )
-        return jsonify(query_response.model_dump_json()), 200
+        logger.info(f"Returning AI response: {query_response.model_dump_json(warnings=True)}")
+        return jsonify(query_response.model_dump_json(warnings=True)), 200
 
     except Exception as e:
         app.logger.error(f"Error generating ai query response: {e}")
         query_response = QueryResponse(
-            received = datetime.now().isoformat(),
+            # received = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             status = '500',
             ai_response = f"Internal server error: {e}"
         )
-        return jsonify(query_response.model_dump_json()), 500
+        return jsonify(query_response.model_dump_json(warnings=True)), 500
     
 
 @app.route('/', defaults={'path': ''})
