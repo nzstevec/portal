@@ -22,7 +22,7 @@ def send_chat_message(messages, rdti_template, additional_context):
         else:
             messages = [{"role": msg["role"],
                         "content": CHAT_PROMPT_WITHOUT.replace("<user-input>", msg["content"])} if msg["role"] == "user" else {"role": msg["role"], "content": msg["content"]} for msg in messages]
-        messages.pop(0)
+        # messages.pop(0)
         while len(str(messages)) > 240000:
             messages.pop(0)
         start = datetime.now()

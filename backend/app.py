@@ -111,6 +111,7 @@ def ai_query_route(*args, **kw):
             logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
 
         messages = [{"role": "user", "content": query_request.user_input}]
+        logger.info(f"AI Query: {messages}")
         response = send_chat_message(messages, "nothing uploaded", file_contents)
         logger.info(f"AI Query response: {response}")
         query_response = QueryResponse()

@@ -107,6 +107,7 @@ class DocumentParser:
                 TEMPLATE_FLAG = False
             else:
                 output_contents.append(contents)
+            logger.info(f"Loaded {file.name} with file contents: {contents[:200]}")
 
         rimon_tokens = self.count_tokens(rimon_template_contents)
         additional_contents_tokens = self.count_tokens("".join(output_contents))
