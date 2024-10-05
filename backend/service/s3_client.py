@@ -56,6 +56,22 @@ def get_uploaded_filenames(userid):
     
     return filenames
 
+def delete_uploaded_file(userid, filename):
+
+    # List objects within the specific bucket and prefix
+    response = s3_client.list_objects_v2(Bucket=Config.FILE_UPLOAD_BUCKET, Prefix=userid)
+    matching_file_keys = []
+    # Iterate through the returned contents to find files with the specified suffix
+    for content in response.get('Contents', []):
+        key = content['Key']
+        if key.endswith(filename):
+            matching_file_keys.append(key)
+
+    for file_key in matching_file_keys:
+        # Delete the object
+        s3_client.delete_object(Bucket=Config.FILE_UPLOAD_BUCKET, Key=file_key)
+    
+    return
 
 def get_download_urls(userid, filenames):
 

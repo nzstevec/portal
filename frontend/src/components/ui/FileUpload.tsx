@@ -1,5 +1,3 @@
-// FileUpload.tsx
-
 import React, { useState, useEffect, ChangeEvent, useContext } from 'react';
 import styled from 'styled-components';
 import CreatePresignedUrlDtoImpl from '../../model/CreatePresignedUrlDto';
@@ -10,10 +8,7 @@ import { FileContext } from '../../integration/FileContext';
 // Styled Components
 
 const FileUploadOuter = styled.div`
-  /* border: 2px dashed #4a90e2; */
-  /* padding: 20px; */
   text-align: center;
-  /* border-radius: 10px; */
   cursor: pointer;
   color: #4a90e2;
   transition: background-color 0.3s;
@@ -23,8 +18,6 @@ const FileUploadOuter = styled.div`
     position: relative;
     bottom: 0;
     left: 0;
-    /* background-color: #333; */
-    /* color: hsl(0, 0%, 3.1372549019607843%); */
     padding: 5px;
     border-radius: 4px;
     font-size: 12px;
@@ -34,7 +27,6 @@ const FileUploadOuter = styled.div`
 
   &:hover::after {
     opacity: 1;
-    /* background-color: #fff; */
   }
 `;
 
@@ -48,7 +40,6 @@ const UploadContainer = styled.div`
   transition: background-color 0.3s;
 `;
 
-
 const HiddenInput = styled.input`
   display: none;
 `;
@@ -60,7 +51,23 @@ const FileList = styled.ul`
 `;
 
 const FileItem = styled.li`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  color: red;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 10px;
+
+  &:hover {
+    color: darkred;
+  }
 `;
 
 const ProgressBar = styled.div<{ progress: number }>`
@@ -101,7 +108,6 @@ export interface UploadFile {
 function getMimeType(filename: string) {
   const extension = filename?.split('.')?.pop()?.toLowerCase() || '';
   
-  // Mapping of extensions to MIME types
   const mimeTypes : { [key: string]: string } = {
     'txt': 'text/plain',
     'html': 'text/html',
@@ -112,10 +118,9 @@ function getMimeType(filename: string) {
     'gif': 'image/gif',
     'pdf': 'application/pdf',
     '': 'application/octet-stream',
-    // Add other mappings as needed
   };
 
-  return mimeTypes[extension] || 'application/octet-stream'; // Default: binary stream
+  return mimeTypes[extension] || 'application/octet-stream';
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -143,14 +148,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
           const file = new File([], filename, { type: mimeType });
           fetchedFiles.push({ file: file, progress: 100, error: null });
         }
-        setFiles(fetchedFiles); // Update the state with the filenames
+        setFiles(fetchedFiles);
       } catch (error) {
         console.error('Error fetching files:', error);
       }
     };
 
-    fetchFiles(); // Trigger the fetch operation
-  }, []); // The effect runs only once on component mount
+    fetchFiles();
+  }, []);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -175,7 +180,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
 
-    // Upload each file
     newFiles.forEach(uploadFile);
     if (files.length > 0) {
       const names = Array.from(files).map(file => file.file.name).join(', ');
@@ -186,7 +190,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const uploadFile = async (uploadFile: UploadFile) => {
     const { file } = uploadFile;
     try {
-      // Step 1: Create a presigned URL
       const request = new CreatePresignedUrlDtoImpl(
         userid,
         file.name,
@@ -198,15 +201,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
           console.log(response);
           const { presignedUrl, fileUrl } = response;
           console.log(presignedUrl, fileUrl);
-          // Step 2: Upload the file to S3 using the presigned URL
           apiService.uploadToPresignedUrl(presignedUrl, file, setFiles);
         })
         .catch((error: BaseApiResponse) => {
           console.error(error);
         });
-        const newFilenames = filenames.length === 0 ? file.name : filenames + ', ' + file.name;
-        setFilenames(newFilenames)
-      // Optionally, you can store the fileUrl or perform further actions
+      const newFilenames = filenames.length === 0 ? file.name : filenames + ', ' + file.name;
+      setFilenames(newFilenames)
     } catch (err: any) {
       console.error(err);
       setFiles((prevFiles) =>
@@ -222,6 +223,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleContainerClick = () => {
     const fileInput = document.getElementById('file-upload-input');
     fileInput?.click();
+  };
+
+  const handleDeleteFile = (index: number, filename: string) => {
+    // TODO: all deleteUploadedFiles
+    apiService.deleteUploadedFiles(userid, filename);
+    setFiles(prevFiles => prevFiles.filter((_, fileIndex) => fileIndex !== index));
   };
 
   return (
@@ -243,6 +250,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             {fileObj.file.name}
             <ProgressBar progress={fileObj.progress} />
             {fileObj.error && <ErrorText>{fileObj.error}</ErrorText>}
+            <DeleteButton onClick={() => handleDeleteFile(index, fileObj.file.name)}>x</DeleteButton>
           </FileItem>
         ))}
       </FileList>

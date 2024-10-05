@@ -7,7 +7,7 @@ import logging
 
 from service.doc_analyst import send_chat_message
 from gpt.parsing import process_files
-from service.s3_client import get_download_urls, get_file_like_object_from_s3, get_presigned_url, get_uploaded_filenames
+from service.s3_client import delete_uploaded_file, get_download_urls, get_file_like_object_from_s3, get_presigned_url, get_uploaded_filenames
 from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
@@ -102,6 +102,22 @@ def uploaded_filenames_route(userid, *args, **kw):
         app.logger.error(f"Error getting uploaded filenames: {e}")
         return jsonify({'message': 'Error getting uploaded filenames.'}), 500
 
+
+@check_auth_token
+@app.route('/api/uploaded-files/<string:userid>/<string:filename>', methods=['DELETE'])
+def delete_uploaded_file_route(userid, filename, *args, **kw):
+    if not userid or not filename:
+        return jsonify({'message': 'Missing required fields.'}), 400
+
+    try:
+        # Generate presigned URL for PUT operation
+        delete_uploaded_file(userid, filename)
+
+        return '', 204
+
+    except Exception as e:
+        app.logger.error(f"Error getting uploaded filenames: {e}")
+        return jsonify({'message': 'Error getting uploaded filenames.'}), 500
 
 
 @check_auth_token

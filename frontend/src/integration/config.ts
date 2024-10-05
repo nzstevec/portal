@@ -24,6 +24,7 @@ export const config = {
   allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf'],
   getPresignedUrlEndpoint: '/api/presigned-url',
   getUploadedFilenamesEndpoint: '/api/uploaded-filenames',
+  deleteUploadedFilesEndpoint: '/api/uploaded-files',
   postFeedbackEndpoint: '/api/feedback',
   postAiQueryEndpoint: '/api/ai-query'
 }

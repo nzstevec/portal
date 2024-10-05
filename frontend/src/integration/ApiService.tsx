@@ -135,6 +135,19 @@ class ApiService {
     }
   }
 
+  async deleteUploadedFiles(
+    userid: string, filename: string
+  ): Promise<null> {
+    try {
+      const endpoint = `${config.deleteUploadedFilesEndpoint}/${userid}/${filename}`;
+      const response: AxiosResponse<null> = await this.api.delete(endpoint);
+
+      return response.data;
+    } catch (error) {
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
+  }
+
   async uploadToPresignedUrl(
     presignedUrl: string,
     file: File,
