@@ -25,6 +25,10 @@ interface BaseApiResponse {
   message: string;
 }
 
+interface GetUploadedFilenamesResponse {
+  filenames: string[];
+}
+
 class ApiService {
   private api: AxiosInstance;
   private origin = window.location.origin;
@@ -112,9 +116,20 @@ class ApiService {
         config.getPresignedUrlEndpoint,
         createPresignedUrlData
       );
-      // const { presignedUrl, fileUrl } = response.data;
-      // const presignedUrlDto = new PresignedUrlDtoImpl(presignedUrl, fileUrl);
       return response.data;
+    } catch (error) {
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
+  }
+
+  async getUploadedFilenames(
+    userid: string
+  ): Promise<string[]> {
+    try {
+      const endpoint = `${config.getUploadedFilenamesEndpoint}/${userid}`;
+      const response: AxiosResponse<GetUploadedFilenamesResponse> = await this.api.get(endpoint);
+
+      return response.data.filenames;
     } catch (error) {
       throw this.normalizeError(error as AxiosError<ApiError>);
     }

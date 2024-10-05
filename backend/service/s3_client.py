@@ -41,6 +41,22 @@ def get_presigned_download_url(file_key):
 
     return presigned_url
 
+
+def get_uploaded_filenames(userid):
+
+    # List objects within the specific bucket and prefix
+    response = s3_client.list_objects_v2(Bucket=Config.FILE_UPLOAD_BUCKET, Prefix=userid)
+
+    filenames = []
+
+    # Iterate through the returned contents to find files with the specified suffix
+    for content in response.get('Contents', []):
+        key = content['Key']
+        filenames.append(key[74:])
+    
+    return filenames
+
+
 def get_download_urls(userid, filenames):
 
     # List objects within the specific bucket and prefix

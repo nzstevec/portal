@@ -1,6 +1,6 @@
 // FileUpload.tsx
 
-import React, { useState, ChangeEvent, useContext } from 'react';
+import React, { useState, useEffect, ChangeEvent, useContext } from 'react';
 import styled from 'styled-components';
 import CreatePresignedUrlDtoImpl from '../../model/CreatePresignedUrlDto';
 import BaseApiResponse, { apiService } from '../../integration/ApiService';
@@ -92,10 +92,30 @@ interface FileUploadProps {
   getPresignedUrlEndpoint: string;
 }
 
-interface UploadFile {
+export interface UploadFile {
   file: File;
   progress: number;
   error: string | null;
+}
+
+function getMimeType(filename: string) {
+  const extension = filename?.split('.')?.pop()?.toLowerCase() || '';
+  
+  // Mapping of extensions to MIME types
+  const mimeTypes : { [key: string]: string } = {
+    'txt': 'text/plain',
+    'html': 'text/html',
+    'json': 'application/json',
+    'jpeg': 'image/jpeg',
+    'jpg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'pdf': 'application/pdf',
+    '': 'application/octet-stream',
+    // Add other mappings as needed
+  };
+
+  return mimeTypes[extension] || 'application/octet-stream'; // Default: binary stream
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -112,6 +132,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
   }
 
   const { filenames, setFilenames } = filenamesContext;
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const fetchedFilenames: string[] = await apiService.getUploadedFilenames(userid); 
+        const fetchedFiles = [];
+        for (const filename of fetchedFilenames) {
+          const mimeType = getMimeType(filename);
+          const file = new File([], filename, { type: mimeType });
+          fetchedFiles.push({ file: file, progress: 100, error: null });
+        }
+        setFiles(fetchedFiles); // Update the state with the filenames
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    };
+
+    fetchFiles(); // Trigger the fetch operation
+  }, []); // The effect runs only once on component mount
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);

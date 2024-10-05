@@ -7,7 +7,7 @@ import logging
 
 from service.doc_analyst import send_chat_message
 from gpt.parsing import process_files
-from service.s3_client import get_download_urls, get_file_like_object_from_s3, get_presigned_url
+from service.s3_client import get_download_urls, get_file_like_object_from_s3, get_presigned_url, get_uploaded_filenames
 from model.query import QueryRequest, QueryResponse
 from config import Config, load_environment_variables
 from authorizer import check_auth_token
@@ -58,7 +58,7 @@ def feedback_route(*args, **kw):
         return jsonify(feedbackResponse.model_dump_json()), feedbackResponse.status
 
 @check_auth_token
-@app.route('/api/get-presigned-url', methods=['POST'])
+@app.route('/api/presigned-url', methods=['POST'])
 def get_presigned_url_route(*args, **kw):
     data = request.get_json()
 
@@ -82,7 +82,28 @@ def get_presigned_url_route(*args, **kw):
     except Exception as e:
         app.logger.error(f"Error generating presigned URL: {e}")
         return jsonify({'message': 'Error generating presigned URL.'}), 500
-    
+
+
+@check_auth_token
+@app.route('/api/uploaded-filenames/<string:userid>', methods=['GET'])
+def uploaded_filenames_route(userid, *args, **kw):
+    if not userid:
+        return jsonify({'message': 'Missing required fields.'}), 400
+
+    try:
+        # Generate presigned URL for PUT operation
+        filenames = get_uploaded_filenames(userid)
+
+        return jsonify({
+            'filenames': filenames
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Error getting uploaded filenames: {e}")
+        return jsonify({'message': 'Error getting uploaded filenames.'}), 500
+
+
+
 @check_auth_token
 @app.route('/api/ai-query', methods=['POST'])
 def ai_query_route(*args, **kw):

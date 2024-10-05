@@ -46,7 +46,7 @@ export const MessageContent = styled.div<{ sender?: 'user' | 'bot' }>`
   max-width: 70%;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   word-wrap: break-word;
-  font-family: 'Calibri', sans-serif;
+  font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', 'Optima', 'Arial', sans-serif !important;
 `;
 
 interface ChatHistoryProps {
