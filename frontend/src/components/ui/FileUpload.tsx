@@ -63,7 +63,7 @@ const DeleteButton = styled.button`
   color: red;
   font-size: 16px;
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
 
   &:hover {
     color: darkred;
@@ -149,6 +149,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
           fetchedFiles.push({ file: file, progress: 100, error: null });
         }
         setFiles(fetchedFiles);
+        if (files.length > 0) {
+          const names = Array.from(files).map(file => file.file.name).join(', ');
+          setFilenames(names);
+        }
       } catch (error) {
         console.error('Error fetching files:', error);
       }
