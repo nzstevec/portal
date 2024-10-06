@@ -79,7 +79,7 @@ def get_download_urls(userid, filenames):
     response = s3_client.list_objects_v2(Bucket=Config.FILE_UPLOAD_BUCKET, Prefix=userid)
 
     matching_file_keys = []
-    filename_list = filenames.split(",")
+    filename_list = filenames.split(", ")
 
     # Iterate through the returned contents to find files with the specified suffix
     for content in response.get('Contents', []):

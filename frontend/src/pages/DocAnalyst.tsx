@@ -90,13 +90,13 @@ function DocAnalyst() {
   const userid = user?.profile?.sub ?? 'unknown';
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState<string>('');
-  const filenamesContext = useContext(FileContext);
+  const filesContext = useContext(FileContext);
 
-  if (!filenamesContext) {
+  if (!filesContext) {
     throw new Error('FileUpload must be used within a FileContextProvider');
   }
 
-  const { filenames, setFilenames } = filenamesContext;
+  const { files, setFiles } = filesContext;
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -111,6 +111,9 @@ function DocAnalyst() {
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputValue('');
+
+    const filenames = Array.from(files).map(file => file.file.name).join(', ');
+
     const request = new QueryRequestDto(
       userid,
       filenames,

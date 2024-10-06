@@ -128,38 +128,42 @@ const FileUpload: React.FC<FileUploadProps> = ({
   allowedMimeTypes,
   getPresignedUrlEndpoint,
 }) => {
-  const [files, setFiles] = useState<UploadFile[]>([]);
+  
   const [error, setError] = useState<string | null>(null);
-  const filenamesContext = useContext(FileContext);
+  const filesContext = useContext(FileContext);
 
-  if (!filenamesContext) {
+  if (!filesContext) {
     throw new Error("FileUpload must be used within a FileContextProvider");
   }
 
-  const { filenames, setFilenames } = filenamesContext;
+  const { files, setFiles } = filesContext;
 
   useEffect(() => {
     const fetchFiles = async () => {
       try {
         const fetchedFilenames: string[] = await apiService.getUploadedFilenames(userid); 
-        const fetchedFiles = [];
+        const fetchedFiles : UploadFile[] = [];
         for (const filename of fetchedFilenames) {
           const mimeType = getMimeType(filename);
           const file = new File([], filename, { type: mimeType });
           fetchedFiles.push({ file: file, progress: 100, error: null });
         }
+        console.log("in fetchFiles - resetting files to ", fetchedFiles);
         setFiles(fetchedFiles);
-        if (files.length > 0) {
-          const names = Array.from(files).map(file => file.file.name).join(', ');
-          setFilenames(names);
-        }
+        // if (files.length > 0) {
+        //   setFilenames((prevFilenames) => {
+        //     const names = Array.from(fetchedFiles).map(file => file.file.name).join(', ');
+        //     console.log("in fetchFiles - resetting filesnames to ", prevFilenames.length === 0 ? names : `${prevFilenames}, ${names}`);
+        //     return prevFilenames.length === 0 ? names : `${prevFilenames}, ${names}`;
+        //   });
+        // }
       } catch (error) {
         console.error('Error fetching files:', error);
       }
     };
 
     fetchFiles();
-  }, []);
+  }, [userid]);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -182,13 +186,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
       });
     }
 
+    console.log("in handleFileChange - setting files to ", files, " plus ", newFiles);
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
 
     newFiles.forEach(uploadFile);
-    if (files.length > 0) {
-      const names = Array.from(files).map(file => file.file.name).join(', ');
-      setFilenames(names);
-    }
+    // if (files.length > 0) {
+    //   const newFilenames = Array.from(newFiles).map(file => file.file.name).join(', ');
+    //   setFilenames((prevFilenames) => {
+    //     console.log("in handleFileChange - setting filenames to ", prevFilenames.length === 0 ? newFilenames : `${prevFilenames}, ${newFilenames}`);
+    //     return prevFilenames.length === 0 ? newFilenames : `${prevFilenames}, ${newFilenames}`;
+    //   });
+    // }
   };
 
   const uploadFile = async (uploadFile: UploadFile) => {
@@ -210,10 +218,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
         .catch((error: BaseApiResponse) => {
           console.error(error);
         });
-      const newFilenames = filenames.length === 0 ? file.name : filenames + ', ' + file.name;
-      setFilenames(newFilenames)
+      // const newFilenames = filenames.length === 0 ? file.name : filenames + ', ' + file.name;
+      // setFilenames(newFilenames)
     } catch (err: any) {
       console.error(err);
+      console.log("in uploadFile - resetting files, dropping one for error: ", err);
       setFiles((prevFiles) =>
         prevFiles.map((f) =>
           f.file === file
