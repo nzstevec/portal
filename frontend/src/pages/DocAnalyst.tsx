@@ -85,6 +85,11 @@ const Button = styled.button`
   align-self: flex-end;
 `;
 
+const DownloadButton = styled(Button)`
+  margin-top: 10px;
+  width: auto;
+`;
+
 function DocAnalyst() {
   const { user } = useAuth();
   const userid = user?.profile?.sub ?? 'unknown';
@@ -96,7 +101,7 @@ function DocAnalyst() {
     throw new Error('FileUpload must be used within a FileContextProvider');
   }
 
-  const { files, setFiles } = filesContext;
+  const { files } = filesContext;
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -147,6 +152,21 @@ function DocAnalyst() {
     }
   };
 
+  const downloadMarkdown = () => {
+    const markdownContent = messages
+      .map((msg) => `${msg.sender === 'user' ? '**User**' : '**Bot**'}: ${msg.text}`)
+      .join('\n\n');
+    
+    const blob = new Blob([markdownContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'chat_history.md';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DocAnalystContainer>
       <Sidebar>
@@ -177,6 +197,7 @@ function DocAnalyst() {
           <Button onClick={handleClick}>
             <IoMdSend />
           </Button>
+          <DownloadButton onClick={downloadMarkdown}>Download Chat History</DownloadButton>
         </ChatInput>
       </DocAnalystContent>
     </DocAnalystContainer>
