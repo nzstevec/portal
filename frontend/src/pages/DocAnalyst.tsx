@@ -13,6 +13,7 @@ import QueryResponseDto from '../model/QueryResponseDto';
 
 const scoti_avatar = '/scoti_avatar.png';
 const user_avatar = '/user_avatar.png';
+const runningManGif = '/running.gif';
 
 const initialMessages: ChatMessage[] = [
   {
@@ -38,7 +39,7 @@ const Sidebar = styled.aside`
   background-repeat: no-repeat;
   background-position: top -20px right 50%;
   background-size: 50%;
-`; 
+`;
 
 const DocAnalystContent = styled.div`
   display: flex;
@@ -90,11 +91,24 @@ const DownloadButton = styled(Button)`
   width: auto;
 `;
 
+const HeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+`;
+
+const RunningManImg = styled.img`
+  max-width: 5%;
+  height: auto;
+`;
+
 function DocAnalyst() {
   const { user } = useAuth();
   const userid = user?.profile?.sub ?? 'unknown';
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const filesContext = useContext(FileContext);
 
   if (!filesContext) {
@@ -107,7 +121,7 @@ function DocAnalyst() {
     setInputValue(event.target.value);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     const newMessage: ChatMessage = {
       id: (messages.length + 1).toString(),
       text: inputValue,
@@ -117,7 +131,9 @@ function DocAnalyst() {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputValue('');
 
-    const filenames = Array.from(files).map(file => file.file.name).join(', ');
+    const filenames = Array.from(files)
+      .map((file) => file.file.name)
+      .join(', ');
 
     const request = new QueryRequestDto(
       userid,
@@ -125,38 +141,42 @@ function DocAnalyst() {
       inputValue,
       'doc_analyst'
     );
-    apiService.sendQueryRequest(request)
-    .then((response) => {
-      console.log(response);
+
+    try {
+      setLoading(true);
+      const response = await apiService.sendQueryRequest(request);
+      setLoading(false);
+
       if (response instanceof QueryResponseDtoImpl) {
-        const newMessage: ChatMessage = {
+        const botMessage: ChatMessage = {
           id: (messages.length + 2).toString(),
           text: response.ai_response,
           avatar: scoti_avatar,
           sender: 'bot',
         };
-        console.log(newMessage);
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-        console.log(messages);
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error(error);
-    });
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      event.preventDefault(); // Prevents the default action of adding a new line
+      event.preventDefault();
       handleClick();
     }
   };
 
   const downloadMarkdown = () => {
     const markdownContent = messages
-      .map((msg) => `${msg.sender === 'user' ? '**User**' : '**Bot**'}: ${msg.text}`)
+      .map(
+        (msg) =>
+          `${msg.sender === 'user' ? '**User**' : '**Bot**'}: ${msg.text}`
+      )
       .join('\n\n');
-    
+
     const blob = new Blob([markdownContent], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -183,8 +203,10 @@ function DocAnalyst() {
         </FileUploadContainer>
       </Sidebar>
       <DocAnalystContent>
-        {/* <h1>Doc Analyst</h1> */}
-        <h3>Chat History</h3>
+        <HeaderWrapper>
+          <h3>Chat History</h3>
+          {loading && <RunningManImg src={runningManGif} alt="Loading..." />}
+        </HeaderWrapper>
         <ChatHistory messages={messages} />
         <ChatInput>
           <Input
@@ -197,7 +219,10 @@ function DocAnalyst() {
           <Button onClick={handleClick}>
             <IoMdSend />
           </Button>
-          <DownloadButton onClick={downloadMarkdown}>Download Chat History</DownloadButton>
+          <DownloadButton onClick={downloadMarkdown}>
+            Download Chat History
+          </DownloadButton>
+          
         </ChatInput>
       </DocAnalystContent>
     </DocAnalystContainer>
