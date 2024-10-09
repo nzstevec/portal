@@ -10,7 +10,7 @@ export interface ChatMessage {
 }
 
 export const ChatContainer = styled.div`
-  width: 70vw;
+  width: 75vw;
   /* max-width: 80vh; */
   border-radius: 8px;
   background-color: #f9f9f9;
@@ -41,10 +41,10 @@ export const Avatar = styled.img`
 
 export const MessageContent = styled.div<{ sender?: 'user' | 'bot' }>`
   background-color: ${({ sender }) => (sender === 'user' ? '#dcf8c6' : '#fff')};
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-radius: 18px;
   max-width: 70%;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1); */
   word-wrap: break-word;
   font-family: 'Calibri', 'Candara', 'Segoe', 'Segoe UI', 'Optima', 'Arial', sans-serif !important;
 `;

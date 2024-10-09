@@ -7,6 +7,8 @@ import {
   useLocation,
 } from 'react-router-dom';
 import styled from 'styled-components';
+import { ReactComponent as LoginIcon } from 'bootstrap-icons/icons/box-arrow-in-left.svg';
+import { ReactComponent as LogoutIcon } from 'bootstrap-icons/icons/box-arrow-right.svg';
 
 import { AuthProvider, useAuth } from './integration/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -14,12 +16,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UnAuthenticated from './pages/Unauthenticated';
 import UserNotes from './pages/UserNotes';
 import About from './pages/About';
-// import Services from './pages/Services';
-// import Contact from './pages/Contact';
 import Feedback from './pages/Feedback';
 import DocAnalyst from './pages/DocAnalyst';
 import Callback from './pages/Callback';
 import { FileProvider } from './integration/FileContext';
+import DocAudit from './pages/DocAudit';
 
 // Styled components
 const AppContainer = styled.div`
@@ -68,7 +69,7 @@ interface NavLinkProps {
 
 const NavLink = styled(Link)<NavLinkProps>`
   color: ${(props) =>
-    props.isActive ? '#FFD700' : 'white'}; /* Highlight active link */
+    props.isActive ? '#FFD700' : 'white'};
   font-size-adjust: ${(props) =>
     props.isActive ? '.7' : '.6'};
   text-decoration: none;
@@ -85,7 +86,6 @@ const Sidebar = styled.aside`
   width: 10vw;
   min-width: 150px;
   height: 100vh;
-  /* border-right: 1px solid #ccc; */
   background-color: #f0f0f0;
   padding: 20px;
   background-image: url('scoti_logo.gif');
@@ -107,9 +107,75 @@ const StatusBar = styled.footer`
   text-align: center;
 `;
 
+const Tooltip = styled.div`
+  visibility: hidden;
+  background-color: #333;
+  color: blue;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px 10px;
+  position: absolute;
+  z-index: 10;
+  bottom: 5%; 
+  left: -5%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+  }
+`;
+
+const IconWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+
+  &:hover ${Tooltip} {
+    visibility: visible;
+    opacity: 1;
+  }
+`;
+
+const Login = styled(LoginIcon)`
+  width: 25px;
+  height: 25px;
+  padding: 0 40px;
+  background-color: #333;
+  color: green;
+  &:hover {
+    color: lightgreen;
+  }
+`;
+
+const Logout = styled(LogoutIcon)`
+  width: 25px;
+  height: 25px;
+  padding: 0 40px;
+  background-color: #333;
+  color: #ff0000;
+  &:hover {
+    color: lightpink;
+  }
+`;
+
+const Button = styled.button`
+  background-color: #333;
+  color: white;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+`;
+
 const AppInner: React.FC = () => {
   const { user, login, logout } = useAuth();
-  // console.log('user = ', user);
   const location = useLocation();
   return (
     <AppContainer>
@@ -131,12 +197,14 @@ const AppInner: React.FC = () => {
               Doc Analyst 𝞫
             </NavLink>
           </NavItem>
-          {/* <NavItem>
-              <NavLink to="/services" isActive={location.pathname === '/services'}>Services</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/contact" isActive={location.pathname === '/contact'}>Contact</NavLink>
-            </NavItem> */}
+          <NavItem>
+            <NavLink
+              to="/doc-audit"
+              isActive={location.pathname === '/doc-audit'}
+            >
+              Doc Audit 𝞫
+            </NavLink>
+          </NavItem>
           <NavItem>
             <NavLink to="/about" isActive={location.pathname === '/about'}>
               About
@@ -150,19 +218,24 @@ const AppInner: React.FC = () => {
               Feedback
             </NavLink>
           </NavItem>
-          <NavItem style={{ marginTop: '-2px' }}>
+          <NavItem style={{ marginTop: '-4px' }}>
             <NavLink to="#" isActive={false}>
               {user ? (
-                <button onClick={logout}>Logout</button>
+                <IconWrapper>
+                  <Button onClick={logout}><Logout /></Button>
+                  <Tooltip>Logout</Tooltip>
+                </IconWrapper>
               ) : (
-                <button onClick={login}>Login</button>
+                <IconWrapper>
+                  <Button onClick={login}><Login /></Button>
+                  <Tooltip>Login</Tooltip>
+                </IconWrapper>
               )}
             </NavLink>
           </NavItem>
         </NavList>
       </Navbar>
       <Content>
-        {/* <Sidebar /> */}
         {location.pathname !== '/doc-analyst' && <Sidebar />}
         <MainContent>
           <Routes>
@@ -183,8 +256,14 @@ const AppInner: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="/services" element={<Services authenticated={isAuthenticated}/>} />
-              <Route path="/contact" element={<Contact authenticated={isAuthenticated}/>} /> */}
+            <Route
+              path="/doc-audit"
+              element={
+                <ProtectedRoute>
+                  <DocAudit />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/about"
               element={
@@ -203,14 +282,6 @@ const AppInner: React.FC = () => {
             />
             <Route path="/callback" element={<Callback />} />
             <Route path="/logout" element={<UnAuthenticated />} />
-            {/* <Route
-              path="/callback"
-              element={
-                <ProtectedRoute>
-                  <UserNotes />
-                </ProtectedRoute>
-              }
-            /> */}
           </Routes>
         </MainContent>
       </Content>

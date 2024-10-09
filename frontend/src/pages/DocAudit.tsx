@@ -9,6 +9,7 @@ import ChatHistory, { ChatMessage } from '../components/ui/ChatHistory';
 import QueryRequestDto from '../model/QueryRequestDto';
 import { apiService } from '../integration/ApiService';
 import QueryResponseDtoImpl from '../model/QueryResponseDto';
+import MultiSelectbox from '../components/ui/MultiSelectbox';
 
 const scoti_avatar = '/scoti_avatar.png';
 const user_avatar = '/user_avatar.png';
@@ -39,7 +40,7 @@ const Sidebar = styled.aside`
   background-size: 50%;
 `;
 
-const DocAnalystContent = styled.div`
+const DocAuditContent = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -53,7 +54,7 @@ const FileUploadContainer = styled.div`
   max-height: 75vh;
 `;
 
-const DocAnalystContainer = styled.div`
+const DocAuditContainer = styled.div`
   display: flex;
   padding: 20px;
 `;
@@ -103,13 +104,31 @@ const RunningManImg = styled.img`
   height: auto;
 `;
 
-function DocAnalyst() {
+const styleguideSections = [
+  "accessible-and-inclusive-content_1",
+  "accessible-and-inclusive-content_2",
+  "referencing-and-attribution_1",
+  "referencing-and-attribution_2",
+  "referencing-and-attribution_3",
+  "structuring-content_1",
+  "structuring-content_2",
+  "writing-and-designing-content_1",
+  "writing-and-designing-content_2",
+  "grammar-punctuation-and-conventions_1",
+  "grammar-punctuation-and-conventions_2",
+  "grammar-punctuation-and-conventions_3",
+  "grammar-punctuation-and-conventions_4",
+  "grammar-punctuation-and-conventions_5",
+]
+
+function DocAudit() {
   const { user } = useAuth();
   const userid = user?.profile?.sub ?? 'unknown';
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const filesContext = useContext(FileContext);
+  const [selectedSections, setSelectedSections] = useState<string[]>([])
 
   if (!filesContext) {
     throw new Error('FileUpload must be used within a FileContextProvider');
@@ -188,7 +207,7 @@ function DocAnalyst() {
   };
 
   return (
-    <DocAnalystContainer>
+    <DocAuditContainer>
       <Sidebar>
         <FileUploadContainer>
           <h4>
@@ -202,7 +221,7 @@ function DocAnalyst() {
           />
         </FileUploadContainer>
       </Sidebar>
-      <DocAnalystContent>
+      <DocAuditContent>
         <HeaderWrapper>
           <h3>Chat History</h3>
           <DownloadButton onClick={downloadMarkdown}>
@@ -210,6 +229,13 @@ function DocAnalyst() {
           </DownloadButton>
           {loading && <RunningManImg src={runningManGif} alt="Loading..." />}
         </HeaderWrapper>
+        <MultiSelectbox 
+          label='What part of style guide should be applied?'
+          options={styleguideSections}
+          value={selectedSections}
+          placeholder="All sections."
+          onChange={(value) => setSelectedSections(value)}
+        />
         <ChatHistory messages={messages} />
         <ChatInput>
           <Input
@@ -221,11 +247,11 @@ function DocAnalyst() {
           />
           <Button onClick={handleClick}>
             <IoMdSend />
-          </Button>
+          </Button>         
         </ChatInput>
-      </DocAnalystContent>
-    </DocAnalystContainer>
+      </DocAuditContent>
+    </DocAuditContainer>
   );
 }
 
-export default DocAnalyst;
+export default DocAudit;

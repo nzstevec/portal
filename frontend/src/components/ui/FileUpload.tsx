@@ -150,20 +150,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }
         console.log("in fetchFiles - resetting files to ", fetchedFiles);
         setFiles(fetchedFiles);
-        // if (files.length > 0) {
-        //   setFilenames((prevFilenames) => {
-        //     const names = Array.from(fetchedFiles).map(file => file.file.name).join(', ');
-        //     console.log("in fetchFiles - resetting filesnames to ", prevFilenames.length === 0 ? names : `${prevFilenames}, ${names}`);
-        //     return prevFilenames.length === 0 ? names : `${prevFilenames}, ${names}`;
-        //   });
-        // }
       } catch (error) {
         console.error('Error fetching files:', error);
       }
     };
 
     fetchFiles();
-  }, [userid]);
+  }, [setFiles, userid]);
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setError(null);
