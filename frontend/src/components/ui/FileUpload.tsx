@@ -183,13 +183,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
 
     newFiles.forEach(uploadFile);
-    // if (files.length > 0) {
-    //   const newFilenames = Array.from(newFiles).map(file => file.file.name).join(', ');
-    //   setFilenames((prevFilenames) => {
-    //     console.log("in handleFileChange - setting filenames to ", prevFilenames.length === 0 ? newFilenames : `${prevFilenames}, ${newFilenames}`);
-    //     return prevFilenames.length === 0 ? newFilenames : `${prevFilenames}, ${newFilenames}`;
-    //   });
-    // }
   };
 
   const uploadFile = async (uploadFile: UploadFile) => {

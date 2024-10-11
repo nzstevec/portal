@@ -110,7 +110,7 @@ const StatusBar = styled.footer`
 const Tooltip = styled.div`
   visibility: hidden;
   background-color: #333;
-  color: blue;
+  color: #f8f8fc;
   text-align: center;
   border-radius: 5px;
   padding: 5px 10px;

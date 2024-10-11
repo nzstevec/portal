@@ -10,6 +10,9 @@ import QueryRequestDto from '../model/QueryRequestDto';
 import { apiService } from '../integration/ApiService';
 import QueryResponseDtoImpl from '../model/QueryResponseDto';
 import MultiSelectbox from '../components/ui/MultiSelectbox';
+import SingleSelectbox from '../components/ui/SingleSelectbox';
+import DocAuditRequestDto from '../model/DocAuditRequestDto';
+import DocAuditResponseDtoImpl from '../model/DocAuditResponseDto';
 
 const scoti_avatar = '/scoti_avatar.png';
 const user_avatar = '/user_avatar.png';
@@ -59,6 +62,10 @@ const DocAuditContainer = styled.div`
   padding: 20px;
 `;
 
+const AuditOutput = styled(DocAuditContent)`
+  margin-left: 0px;
+`;
+
 const ChatInput = styled.div`
   width: 100vw;
   height: 40px;
@@ -74,6 +81,12 @@ const Input = styled.input`
   width: 75%;
 `;
 
+const Label = styled.label`
+  font-size: 12px;
+  font-weight: bold;
+  padding: 10px;
+`;
+
 const Button = styled.button`
   background-color: rgba(46, 45, 144, 0.855);
   color: white;
@@ -82,6 +95,11 @@ const Button = styled.button`
   border-radius: 4px;
   width: 40px;
   cursor: pointer;
+
+  &:disabled {
+    background-color: rgba(150, 150, 150, 0.5); /* Example disabled color */
+    cursor: not-allowed;
+  }
 `;
 
 const DownloadButton = styled(Button)`
@@ -92,10 +110,29 @@ const DownloadButton = styled(Button)`
 `;
 
 const HeaderWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+`;
+
+const DocSelectWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  div {
+    justify-self: center;
+  }
+`;
+
+const LabelWithButton = styled.div`
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  justify-items: center;
+  align-items: self-start;
+  text-align: center;
+  width: 100%;
+  border: 1px solid rgba(187, 187, 202, 0.855);
+  margin-bottom: 8px;
 `;
 
 const RunningManImg = styled.img`
@@ -105,21 +142,21 @@ const RunningManImg = styled.img`
 `;
 
 const styleguideSections = [
-  "accessible-and-inclusive-content_1",
-  "accessible-and-inclusive-content_2",
-  "referencing-and-attribution_1",
-  "referencing-and-attribution_2",
-  "referencing-and-attribution_3",
-  "structuring-content_1",
-  "structuring-content_2",
-  "writing-and-designing-content_1",
-  "writing-and-designing-content_2",
-  "grammar-punctuation-and-conventions_1",
-  "grammar-punctuation-and-conventions_2",
-  "grammar-punctuation-and-conventions_3",
-  "grammar-punctuation-and-conventions_4",
-  "grammar-punctuation-and-conventions_5",
-]
+  'accessible-and-inclusive-content_1',
+  'accessible-and-inclusive-content_2',
+  'referencing-and-attribution_1',
+  'referencing-and-attribution_2',
+  'referencing-and-attribution_3',
+  'structuring-content_1',
+  'structuring-content_2',
+  'writing-and-designing-content_1',
+  'writing-and-designing-content_2',
+  'grammar-punctuation-and-conventions_1',
+  'grammar-punctuation-and-conventions_2',
+  'grammar-punctuation-and-conventions_3',
+  'grammar-punctuation-and-conventions_4',
+  'grammar-punctuation-and-conventions_5',
+];
 
 function DocAudit() {
   const { user } = useAuth();
@@ -127,14 +164,58 @@ function DocAudit() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [auditActive, setAuditActive] = useState<boolean>(false);
   const filesContext = useContext(FileContext);
-  const [selectedSections, setSelectedSections] = useState<string[]>([])
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
+  const [selectedFilename, setSelectedFilename] = useState<string>('');
 
   if (!filesContext) {
     throw new Error('FileUpload must be used within a FileContextProvider');
   }
 
   const { files } = filesContext;
+  const fileNames = Array.from(files).map((file) => file.file.name);
+
+  const startAudit = async () => {
+    setAuditActive(true);
+    const newMessage: ChatMessage = {
+      id: (messages.length + 1).toString(),
+      text: "audit my document against the style guide's recommendations",
+      avatar: user_avatar,
+      sender: 'user',
+    };
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+    // const filenames = Array.from(files)
+    //   .map((file) => file.file.name)
+    //   .join(', ');
+
+    const request = new DocAuditRequestDto(
+      userid,
+      selectedFilename,
+      selectedSections.join(', '),
+      'doc_audit'
+    );
+
+    try {
+      setLoading(true);
+      const response = await apiService.sendDocAuditRequest(request);
+      setLoading(false);
+
+      if (response instanceof DocAuditResponseDtoImpl) {
+        const botMessage: ChatMessage = {
+          id: (messages.length + 2).toString(),
+          text: response.ai_response,
+          avatar: scoti_avatar,
+          sender: 'bot',
+        };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      }
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -158,7 +239,7 @@ function DocAudit() {
       userid,
       filenames,
       inputValue,
-      'doc_analyst'
+      'doc_audit'
     );
 
     try {
@@ -222,33 +303,54 @@ function DocAudit() {
         </FileUploadContainer>
       </Sidebar>
       <DocAuditContent>
-        <HeaderWrapper>
-          <h3>Chat History</h3>
-          <DownloadButton onClick={downloadMarkdown}>
-            Save Chat History?
-          </DownloadButton>
-          {loading && <RunningManImg src={runningManGif} alt="Loading..." />}
-        </HeaderWrapper>
-        <MultiSelectbox 
-          label='What part of style guide should be applied?'
-          options={styleguideSections}
-          value={selectedSections}
-          placeholder="All sections."
-          onChange={(value) => setSelectedSections(value)}
-        />
-        <ChatHistory messages={messages} />
-        <ChatInput>
-          <Input
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Chat with SCOTi here..."
+        <DocSelectWrapper>
+          <SingleSelectbox
+            label="What document should SCOTi audit"
+            options={fileNames}
+            value=""
+            placeholder="...select an uploaded document"
+            onChange={(value) => setSelectedFilename(value)}
           />
-          <Button onClick={handleClick}>
-            <IoMdSend />
-          </Button>         
-        </ChatInput>
+          <MultiSelectbox
+            label="What part of the style guide should SCOTi apply"
+            options={styleguideSections}
+            value={selectedSections}
+            placeholder="All sections."
+            onChange={(value) => setSelectedSections(value)}
+          />
+          <LabelWithButton>
+            <Label>Start style guide review?</Label>
+            <Button onClick={startAudit} disabled={selectedFilename === '' || auditActive}>
+              <IoMdSend />
+            </Button>
+          </LabelWithButton>
+        </DocSelectWrapper>
+        {auditActive && (
+          <AuditOutput>
+            <HeaderWrapper>
+              <h3>Chat History</h3>
+              <DownloadButton onClick={downloadMarkdown}>
+                Save Chat History?
+              </DownloadButton>
+              {loading && (
+                <RunningManImg src={runningManGif} alt="Loading..." />
+              )}
+            </HeaderWrapper>
+            <ChatHistory messages={messages} />
+            <ChatInput>
+              <Input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Chat with SCOTi here..."
+              />
+              <Button onClick={handleClick}>
+                <IoMdSend />
+              </Button>
+            </ChatInput>
+          </AuditOutput>
+        )}
       </DocAuditContent>
     </DocAuditContainer>
   );

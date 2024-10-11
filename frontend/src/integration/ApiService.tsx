@@ -6,6 +6,8 @@ import PresignedUrlDto from '../model/PresignedUrlDto';
 import QueryRequestDto from '../model/QueryRequestDto';
 import QueryResponseDto from '../model/QueryResponseDto';
 import QueryResponseDtoImpl from '../model/QueryResponseDto';
+import DocAuditRequestDto from '../model/DocAuditRequestDto';
+import DocAuditResponseDto from '../model/DocAuditResponseDto';
 
 // Existing interfaces
 interface User {
@@ -187,6 +189,23 @@ class ApiService {
       const response: AxiosResponse<QueryResponseDto> = await this.api.post(
         config.postAiQueryEndpoint,
         queryRequestDto
+      );
+
+      const data = response.data;
+      return new QueryResponseDtoImpl(data.received, data.status, data.ai_response);
+
+    } catch (error) {
+      throw this.normalizeError(error as AxiosError<ApiError>);
+    }
+  }
+
+  async sendDocAuditRequest(
+    docAuditRequestDto: DocAuditRequestDto
+  ): Promise<DocAuditResponseDto> {
+    try {
+      const response: AxiosResponse<DocAuditResponseDto> = await this.api.post(
+        config.postAiQueryEndpoint,
+        docAuditRequestDto
       );
 
       const data = response.data;

@@ -4,9 +4,9 @@ import styled from 'styled-components';
 interface SelectboxProps {
   options: string[];
   label: string;
-  value: string[];
+  value: string;
   placeholder?: string;
-  onChange: (value: string[]) => void;
+  onChange: (value: string) => void;
 }
 
 const SelectboxContainer = styled.div`
@@ -23,13 +23,11 @@ const SelectedItemsContainer = styled.div`
   display: flex;
   justify-content: space-around;
   gap: 8px;
-  /* margin-bottom: 8px; */
   font-size: 12px;
   color: #999;
   width: inherit;
   white-space: nowrap;
   overflow-x: scroll;
-
 `;
 
 const SelectedItem = styled.span`
@@ -79,10 +77,6 @@ const ToggleButton = styled.button`
   border-radius: 4px;
   padding: 5px 10px;
   cursor: pointer;
-  justify-self: flex-end;
-  /* position: relative;
-  right: -82px;
-  top: 2px; */
 `;
 
 const HiddenSelect = styled.select<{ open: boolean }>`
@@ -100,41 +94,27 @@ const HiddenSelect = styled.select<{ open: boolean }>`
   }
 `;
 
-const MultiSelectbox: React.FC<SelectboxProps> = ({
+const SingleSelectbox: React.FC<SelectboxProps> = ({
   options,
   label,
   value,
   placeholder = 'Select an option',
   onChange,
 }) => {
-  const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
+  const [selectedValue, setSelectedValue] = useState<string>(value || '');
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const currentSelection = Array.from(
-      event.target.selectedOptions,
-      (option) => option.value
-    );
+    const currentSelection = event.target.value;
 
-    const newSelections = Array.from(
-      new Set([...selectedValues, ...currentSelection])
-    );
-
-    setSelectedValues(newSelections);
-    onChange(newSelections);
+    setSelectedValue(currentSelection);
+    onChange(currentSelection);
   };
 
-  const handleDelete = (itemToDelete: string) => {
-    const newSelections = selectedValues.filter(
-      (item) => item !== itemToDelete
-    );
-    setSelectedValues(newSelections);
-    onChange(newSelections);
+  const handleDelete = () => {
+    setSelectedValue('');
+    onChange('');
   };
-
-  const availableOptions = options.filter(
-    (option) => !selectedValues.includes(option)
-  );
 
   const toggleDropdown = () => {
     setDropdownOpen((prev) => !prev);
@@ -153,25 +133,23 @@ const MultiSelectbox: React.FC<SelectboxProps> = ({
         </ToggleButton>
       </LabelAndButtonContainer>
       <SelectedItemsContainer>
-        {selectedValues.length === 0 ? (
+        {selectedValue === '' ? (
           <SelectedItem key={placeholder}>{placeholder}</SelectedItem>
         ) : (
-          selectedValues.map((item) => (
-            <SelectedItem key={item}>
-              {item}
-              <button onClick={() => handleDelete(item)}>x</button>
-            </SelectedItem>
-          ))
+          <SelectedItem key={selectedValue}>
+            {selectedValue}
+            <button onClick={handleDelete}>x</button>
+          </SelectedItem>
         )}
       </SelectedItemsContainer>
       <HiddenSelect
-        multiple
-        value={[]}
+        value={selectedValue}
         onChange={handleChange}
         onBlur={handleBlur}
         open={dropdownOpen}
       >
-        {availableOptions.map((option) => (
+        <option value="" disabled>{placeholder}</option>
+        {options.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>
@@ -181,4 +159,4 @@ const MultiSelectbox: React.FC<SelectboxProps> = ({
   );
 };
 
-export default MultiSelectbox;
+export default SingleSelectbox;

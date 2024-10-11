@@ -5,6 +5,7 @@ interface SelectboxProps {
   options: string[];
   label: string;
   value: string;
+  placeholder?: string;
   onChange: (value: string) => void;
 }
 
@@ -32,6 +33,7 @@ const Selectbox: React.FC<SelectboxProps> = ({
   options,
   label,
   value,
+  placeholder = 'Select an option',
   onChange,
 }) => {
   const [selectedValue, setSelectedValue] = useState('');
@@ -45,7 +47,7 @@ const Selectbox: React.FC<SelectboxProps> = ({
     <SelectboxContainer>
       <label><b>{label}</b></label>
       <Select value={selectedValue} onChange={handleChange}>
-          <option value="" disabled selected>Select an option</option>
+          <option value={value} disabled selected>{placeholder}</option>
           {options.map((option) => (
             <option key={option} value={option}>
               {option}

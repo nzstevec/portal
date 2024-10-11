@@ -21,10 +21,11 @@ export const oidcConfigLocal = {
   };
 
 export const config = {
-  allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf'],
+  allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf','text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   getPresignedUrlEndpoint: '/api/presigned-url',
   getUploadedFilenamesEndpoint: '/api/uploaded-filenames',
   deleteUploadedFilesEndpoint: '/api/uploaded-files',
   postFeedbackEndpoint: '/api/feedback',
-  postAiQueryEndpoint: '/api/ai-query'
+  postAiQueryEndpoint: '/api/ai-query',
+  postAiDocAuditEndpoint: '/api/ai-doc-audit',
 }
