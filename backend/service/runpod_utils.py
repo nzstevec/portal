@@ -58,11 +58,11 @@ def runpod_call(prompt: str = "", messages: list = [], timeout: int = 180, **run
             # "prompt": prompt,
         }
     }
-    logger.info(f"calling runpod endpoint with data: {data}")
+    # logger.info(f"calling runpod endpoint with data: {data}")
     run_request = endpoint.run(data)
     runpod_response = run_request.output(timeout=timeout)
     try:
-        logger.info(f"runpod request output: {runpod_response}")
+        # logger.info(f"runpod request output: {runpod_response}")
         return ''.join(runpod_response)
     except Exception as e:
         logger.error("Houston, we have a %s", "major problem handling runpod output", exc_info=True)

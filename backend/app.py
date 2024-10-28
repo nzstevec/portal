@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, send_from_directory
+import json
+from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 from model.doc_audit import DocAuditRequest, DocAuditResponse
 from pydantic import ValidationError
@@ -123,11 +124,12 @@ def delete_uploaded_file_route(userid, filename, *args, **kw):
 
 
 @check_auth_token
-@app.route('/api/ai-doc-audit', methods=['POST'])
+@app.route('/api/ai-doc-audit', methods=['GET'])
 def ai_doc_audit_route(*args, **kw):
-    data = request.get_json()
+    data = json.loads(request.args.get("payload"))
     try:
         doc_audit_request = DocAuditRequest(**data)
+        logger.info(f"--> doc_audit_request: {doc_audit_request}")
     except ValidationError as e:
         logger.error(f"Validation error: {str(e)}")
         return jsonify({'message': 'Invalid request data', 'details': str(e)}), 400
@@ -135,49 +137,119 @@ def ai_doc_audit_route(*args, **kw):
         logger.error(f"Unexpected error during request parsing: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
 
-    try:
-        logger.info(f"AI Doc Audit: userid: {doc_audit_request.userid}, file_name: {doc_audit_request.file_name}, template_name: {doc_audit_request.template_name}, file_names: {doc_audit_request.file_names}")
-        download_urls, file_keys = get_download_urls(doc_audit_request.userid, doc_audit_request.file_name)
-        uploaded_files = []
-        for download_url, file_key in zip(download_urls, file_keys):
+    def generate():
+        with app.app_context():
             try:
-                logger.info(f"Fetching from URL: {download_url}")
-                file_like_object = get_file_like_object_from_s3(download_url)
-                file_like_object.name = file_key
-                uploaded_files.append(file_like_object)
+                logger.info(f"AI Doc Audit: userid: {doc_audit_request.userid}, file_name: {doc_audit_request.file_name}, template_name: {doc_audit_request.template_name}, style_guide_file_names: {doc_audit_request.style_guide_file_names}")
+                download_urls, file_keys = get_download_urls(doc_audit_request.userid, doc_audit_request.file_name)
+                uploaded_files = []
+                for download_url, file_key in zip(download_urls, file_keys):
+                    try:
+                        logger.info(f"Fetching from URL: {download_url}")
+                        file_like_object = get_file_like_object_from_s3(download_url)
+                        file_like_object.name = file_key
+                        uploaded_files.append(file_like_object)
+                    except Exception as e:
+                        logger.error(f"Failed to fetch or process the file at {download_url}: {str(e)}")
+                        continue
+
+                logger.debug(f"First 50 chars of first 5 file contents: {[f.read(50) for f in uploaded_files[:5]]}") 
+                file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
+                logger.info(f"Total tokens: {total_tokens}")
+
+                if total_tokens > 60000:
+                    logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
+
+                doc_audit_response = DocAuditResponse(
+                    status='100',
+                    ai_response=f"{doc_audit_request.ai_provider} starting"
+                )
+                doc_audit_response_dict = doc_audit_response.model_dump()
+                # print(f"doc_audit_response_dict: {doc_audit_response_dict}")  
+                yield "event: message\n"
+                yield f"data: {json.dumps(doc_audit_response_dict)}\n\n"
+
+                response = send_audit_message(
+                    style_guides_filter=doc_audit_request.style_guide_file_names, 
+                    additional_context=file_contents,
+                    ai_provider=doc_audit_request.ai_provider)
+                for interim_result in response:
+                    doc_audit_response = DocAuditResponse(
+                        status='200',
+                        ai_response=interim_result
+                    )
+                    doc_audit_response_dict = doc_audit_response.model_dump()
+                    # print(f"doc_audit_response_dict: {doc_audit_response_dict}")  
+                    yield "event: message\n"
+                    yield f"data: {json.dumps(doc_audit_response_dict)}\n\n"
+
             except Exception as e:
-                logger.error(f"Failed to fetch or process the file at {download_url}: {str(e)}")
-                continue
+                logger.error(f"Error processing request: {e}")
+                query_response = QueryResponse(
+                    status = '500',
+                    ai_response = f"Internal server error: {e}"
+                )
+                doc_audit_response_dict = query_response.model_dump()
+                yield "event: error\n"
+                yield f"data: {json.dumps(doc_audit_response_dict)}\n\n"
 
-        logger.debug(f"First 50 chars of first 5 file contents: {[f.read(50) for f in uploaded_files[:5]]}") 
-        file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
-        logger.info(f"Total tokens: {total_tokens}")
+    return Response(generate(), mimetype="text/event-stream")
 
-        if total_tokens > 60000:
-            logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
+# def ai_doc_audit_route(*args, **kw):
+#     data = request.get_json()
+#     try:
+#         doc_audit_request = DocAuditRequest(**data)
+#         logger.info(f"doc_audit_request: {doc_audit_request}")
+#     except ValidationError as e:
+#         logger.error(f"Validation error: {str(e)}")
+#         return jsonify({'message': 'Invalid request data', 'details': str(e)}), 400
+#     except Exception as e:
+#         logger.error(f"Unexpected error during request parsing: {str(e)}")
+#         return jsonify({'message': 'Internal server error'}), 500
 
-        response = send_audit_message(
-            style_guides=doc_audit_request.style_guide_file_names, 
-            additional_context=file_contents)
-        logger.info("after automated 'review my doc' AI call")
-        logger.info(f"Received AI response: {response}")
+#     try:
+#         logger.info(f"AI Doc Audit: userid: {doc_audit_request.userid}, file_name: {doc_audit_request.file_name}, template_name: {doc_audit_request.template_name}, style_guide_file_names: {doc_audit_request.style_guide_file_names}")
+#         download_urls, file_keys = get_download_urls(doc_audit_request.userid, doc_audit_request.file_name)
+#         uploaded_files = []
+#         for download_url, file_key in zip(download_urls, file_keys):
+#             try:
+#                 logger.info(f"Fetching from URL: {download_url}")
+#                 file_like_object = get_file_like_object_from_s3(download_url)
+#                 file_like_object.name = file_key
+#                 uploaded_files.append(file_like_object)
+#             except Exception as e:
+#                 logger.error(f"Failed to fetch or process the file at {download_url}: {str(e)}")
+#                 continue
 
-        doc_audit_response = DocAuditResponse(
-            status='200',
-            ai_response=response
-        )
-        doc_audit_response_dict = doc_audit_response.model_dump()
-        logger.info(f"Returning AI response: {doc_audit_response_dict}")
-        return jsonify(doc_audit_response_dict), 200
+#         logger.debug(f"First 50 chars of first 5 file contents: {[f.read(50) for f in uploaded_files[:5]]}") 
+#         file_contents, rimon_template_contents, total_tokens = process_files(uploaded_files)
+#         logger.info(f"Total tokens: {total_tokens}")
 
-    except Exception as e:
-        app.logger.error(f"Error generating ai query response: {e}")
-        query_response = QueryResponse(
-            status = '500',
-            ai_response = f"Internal server error: {e}"
-        )
-        doc_audit_response_dict = query_response.model_dump()
-        return jsonify(doc_audit_response_dict), 500
+#         if total_tokens > 60000:
+#             logger.warning(f"Total tokens exceed 60000, likely failure ahead. Total tokens: {total_tokens}")  
+
+#         response = send_audit_message(
+#             style_guides_filter=doc_audit_request.style_guide_file_names, 
+#             additional_context=file_contents)
+#         logger.info("after automated 'review my doc' AI call")
+#         logger.info(f"Received AI response: {response}")
+
+#         doc_audit_response = DocAuditResponse(
+#             status='200',
+#             ai_response=response
+#         )
+#         doc_audit_response_dict = doc_audit_response.model_dump()
+#         logger.info(f"Returning AI response: {doc_audit_response_dict}")
+#         return Response(doc_audit_response_dict, mimetype='text/event-stream',status=200)
+
+#     except Exception as e:
+#         app.logger.error(f"Error generating ai query response: {e}")
+#         query_response = QueryResponse(
+#             status = '500',
+#             ai_response = f"Internal server error: {e}"
+#         )
+#         doc_audit_response_dict = query_response.model_dump()
+#         return jsonify(doc_audit_response_dict), 500
 
 @check_auth_token
 @app.route('/api/ai-query', methods=['POST'])

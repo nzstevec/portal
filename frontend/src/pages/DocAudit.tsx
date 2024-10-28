@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import FileUpload from '../components/ui/FileUpload';
 import { useAuth } from '../integration/AuthContext';
@@ -112,14 +112,17 @@ const DownloadButton = styled(Button)`
 const HeaderWrapper = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr;
+  h3 {
+    justify-self: center;
+  }
 `;
 
 const DocSelectWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   padding: 10px;
   border-bottom: 1px solid #ccc;
-  div {
+  div, img {
     justify-self: center;
   }
 `;
@@ -136,7 +139,7 @@ const LabelWithButton = styled.div`
 `;
 
 const RunningManImg = styled.img`
-  max-width: 2%;
+  max-width: 10%;
   opacity: 0.3;
   height: auto;
 `;
@@ -176,7 +179,14 @@ function DocAudit() {
   const { files } = filesContext;
   const fileNames = Array.from(files).map((file) => file.file.name);
 
-  const startAudit = async () => {
+  // const startAuditOpenai = async () => {
+  //   await startAudit('openai');
+  // };
+
+  const startAudit = async (event: React.MouseEvent<HTMLButtonElement>, ai_provider: string = 'scoti') => {
+    if (event.shiftKey) {
+      ai_provider = 'openai';
+    }
     setAuditActive(true);
     const newMessage: ChatMessage = {
       id: (messages.length + 1).toString(),
@@ -186,23 +196,21 @@ function DocAudit() {
     };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    // const filenames = Array.from(files)
-    //   .map((file) => file.file.name)
-    //   .join(', ');
-
     const request = new DocAuditRequestDto(
       userid,
       selectedFilename,
       selectedSections.join(', '),
-      'doc_audit'
+      'doc_audit',
+      ai_provider
     );
 
     try {
       setLoading(true);
-      const response = await apiService.sendDocAuditRequest(request);
-      setLoading(false);
+      const eventSource = new EventSource(config.sseAiDocAuditEndpoint + '?payload=' + JSON.stringify(request));
 
-      if (response instanceof DocAuditResponseDtoImpl) {
+      eventSource.onmessage = (event) => {
+        const response: DocAuditResponseDtoImpl = JSON.parse(event.data);
+        console.log('response', response);
         const botMessage: ChatMessage = {
           id: (messages.length + 2).toString(),
           text: response.ai_response,
@@ -210,7 +218,15 @@ function DocAudit() {
           sender: 'bot',
         };
         setMessages((prevMessages) => [...prevMessages, botMessage]);
-      }
+        
+      };
+
+      eventSource.onerror = (err) => {
+        console.error('EventSource failed:', err);
+        eventSource.close();
+        setLoading(false);
+      };
+
     } catch (error) {
       console.error(error);
       setLoading(false);
@@ -221,7 +237,16 @@ function DocAudit() {
     setInputValue(event.target.value);
   };
 
-  const handleClick = async () => {
+  // const handleClickOpenai = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  //   event.preventDefault();
+  //   event.currentTarget.blur();
+  //   await handleClick('openai');
+  // };
+
+  const handleClick = async (event: React.MouseEvent<HTMLButtonElement>, ai_provider: string = 'scoti') => {
+    if (event.shiftKey) {
+      ai_provider = 'openai';
+    }
     const newMessage: ChatMessage = {
       id: (messages.length + 1).toString(),
       text: inputValue,
@@ -239,7 +264,8 @@ function DocAudit() {
       userid,
       filenames,
       inputValue,
-      'doc_audit'
+      'doc_audit',
+      ai_provider
     );
 
     try {
@@ -262,12 +288,12 @@ function DocAudit() {
     }
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleClick();
-    }
-  };
+  // const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (event.key === 'Enter') {
+  //     event.preventDefault();
+  //     handleClick();
+  //   }
+  // };
 
   const downloadMarkdown = () => {
     const markdownContent = messages
@@ -310,6 +336,7 @@ function DocAudit() {
             value=""
             placeholder="...select an uploaded document"
             onChange={(value) => setSelectedFilename(value)}
+            auditActive={auditActive}
           />
           <MultiSelectbox
             label="What part of the style guide should SCOTi apply"
@@ -317,13 +344,18 @@ function DocAudit() {
             value={selectedSections}
             placeholder="All sections."
             onChange={(value) => setSelectedSections(value)}
+            auditActive={auditActive}
           />
           <LabelWithButton>
             <Label>Start style guide review?</Label>
-            <Button onClick={startAudit} disabled={selectedFilename === '' || auditActive}>
+            <Button onClick={(event) =>startAudit(event)}
+              disabled={selectedFilename === '' || auditActive}>
               <IoMdSend />
             </Button>
           </LabelWithButton>
+          {loading && (
+            <RunningManImg src={runningManGif} alt="Loading..." />
+          )}
         </DocSelectWrapper>
         {auditActive && (
           <AuditOutput>
@@ -332,9 +364,6 @@ function DocAudit() {
               <DownloadButton onClick={downloadMarkdown}>
                 Save Chat History?
               </DownloadButton>
-              {loading && (
-                <RunningManImg src={runningManGif} alt="Loading..." />
-              )}
             </HeaderWrapper>
             <ChatHistory messages={messages} />
             <ChatInput>
@@ -342,10 +371,10 @@ function DocAudit() {
                 type="text"
                 value={inputValue}
                 onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
+                // onKeyDown={handleKeyDown}
                 placeholder="Chat with SCOTi here..."
               />
-              <Button onClick={handleClick}>
+              <Button onClick={(event) => handleClick(event)}>
                 <IoMdSend />
               </Button>
             </ChatInput>

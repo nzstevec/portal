@@ -1,3 +1,12 @@
+# usage notes - to run locally 
+Build the frontend first
+ - cd frontend
+ - npm run build
+then run the backend
+ - cd backend
+ - conda activate portal-backend
+ - flask run
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

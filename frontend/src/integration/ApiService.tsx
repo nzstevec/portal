@@ -8,6 +8,7 @@ import QueryResponseDto from '../model/QueryResponseDto';
 import QueryResponseDtoImpl from '../model/QueryResponseDto';
 import DocAuditRequestDto from '../model/DocAuditRequestDto';
 import DocAuditResponseDto from '../model/DocAuditResponseDto';
+import DocAuditResponseDtoImpl from '../model/DocAuditResponseDto';
 
 // Existing interfaces
 interface User {
@@ -199,22 +200,23 @@ class ApiService {
     }
   }
 
-  async sendDocAuditRequest(
-    docAuditRequestDto: DocAuditRequestDto
-  ): Promise<DocAuditResponseDto> {
-    try {
-      const response: AxiosResponse<DocAuditResponseDto> = await this.api.post(
-        config.postAiQueryEndpoint,
-        docAuditRequestDto
-      );
+  // async sendDocAuditRequest(
+  //   docAuditRequestDto: DocAuditRequestDto
+  // ): Promise<DocAuditResponseDto> {
+  //   try {
+  //     const response: AxiosResponse<DocAuditResponseDto> = await this.api.post(
+  //       config.postAiDocAuditEndpoint,
+  //       docAuditRequestDto
+  //     );
 
-      const data = response.data;
-      return new QueryResponseDtoImpl(data.received, data.status, data.ai_response);
+  //     const data = response.data;
+  //     console.log('data', data);
+  //     return new DocAuditResponseDtoImpl(data.received, data.status, data.ai_response);
 
-    } catch (error) {
-      throw this.normalizeError(error as AxiosError<ApiError>);
-    }
-  }
+  //   } catch (error) {
+  //     throw this.normalizeError(error as AxiosError<ApiError>);
+  //   }
+  // }
 }
 
 export const apiService = new ApiService();

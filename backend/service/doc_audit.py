@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from gpt.parsing import DocumentParser, process_files
 from gpt.prompts import CHAT_PROMPT_WITH_FILES, CHAT_PROMPT_WITHOUT, DOC_AUDIT_PROMPT_WITH_FILES
@@ -5,22 +6,23 @@ from service.runpod_utils import runpod_call
 from service.openai_client import invoke_openai_directly_with_messages
 from config import runpod_credentials_chat, logger
 
-all_style_guides = [
-    "accessible-and-inclusive-content_1",
-    "accessible-and-inclusive-content_2",
-    "referencing-and-attribution_1",
-    "referencing-and-attribution_2",
-    "referencing-and-attribution_3",
-    "structuring-content_1",
-    "structuring-content_2",
-    "writing-and-designing-content_1",
-    "writing-and-designing-content_2",
-    "grammar-punctuation-and-conventions_1",
-    "grammar-punctuation-and-conventions_2",
-    "grammar-punctuation-and-conventions_3",
-    "grammar-punctuation-and-conventions_4",
-    "grammar-punctuation-and-conventions_5",
-]
+all_style_guides = """
+accessible-and-inclusive-content_1, 
+accessible-and-inclusive-content_2, 
+referencing-and-attribution_1, 
+referencing-and-attribution_2, 
+referencing-and-attribution_3, 
+structuring-content_1, 
+structuring-content_2, 
+writing-and-designing-content_1, 
+writing-and-designing-content_2, 
+grammar-punctuation-and-conventions_1, 
+grammar-punctuation-and-conventions_2, 
+grammar-punctuation-and-conventions_3, 
+grammar-punctuation-and-conventions_4, 
+grammar-punctuation-and-conventions_5
+"""
+
 
 
 def get_style_guides(style_guides_filter):
@@ -28,11 +30,15 @@ def get_style_guides(style_guides_filter):
         style_guides_filter = all_style_guides
     style_guide_names = [
         "data/input/" + style_guide + ".pdf"
-        for style_guide in style_guides_filter
+        for style_guide in style_guides_filter.split(", ")
     ]
     logger.info("style guides: %s", style_guide_names)
     parser = DocumentParser()
+    # log current working directory
+    cwd = os.getcwd()
+    logger.info("Current working directory: %s", cwd)
     style_guides = [parser.load_pdf(file_path=file_path) for file_path in style_guide_names]
+    return style_guides
 
 
 # def send_chat_message(messages,previous_recommendations,additional_context,message_history,**runpod_credentials):
@@ -121,7 +127,7 @@ def get_style_guides(style_guides_filter):
 #         return runpod_response
 
 
-def send_audit_message(style_guides_filter, additional_context):
+def send_audit_message(style_guides_filter, additional_context, ai_provider='scoti'):
     style_guides = get_style_guides(style_guides_filter)
     messages = []
     for i, style_guide in enumerate(style_guides, start=1):
@@ -158,34 +164,38 @@ def send_audit_message(style_guides_filter, additional_context):
             messages.pop(0)
         start = datetime.now()
         try:
-            runpod_response = runpod_call(messages=messages, **runpod_credentials_chat)
+            if ai_provider == 'scoti':
+                ai_response = runpod_call(messages=messages, **runpod_credentials_chat)
+            else:
+                ai_response = invoke_openai_directly_with_messages(messages)
         except TimeoutError as e:
             logger.error("Timeout error calling runpod")
-            runpod_response = "Argh!!! I took too long to respond. please try again"
+            ai_response = "Argh!!! I took too long to respond. please try again"
         except Exception as e:
             logger.error("Houston, we have a %s", "major problem", exc_info=True)
-            runpod_response = "#@!# oops, something went wrong, please try again"
+            ai_response = "#@!# oops, something went wrong, please try again"
         end = datetime.now()
-        logger.info(f"Got a {len(runpod_response)} character response. Call took {end-start}")
+        logger.info(f"Got a {len(ai_response)} character response. Call took {end-start}")
         if i < len(style_guides):
             logger.info("after interim AI call")
             logger.info("AI response added to state")
             messages.append(
                 {
                     "role": "assistant",
-                    "content": runpod_response,
+                    "content": ai_response,
                 }
             )
+            yield ai_response
             logger.info(f"index is {i} style_guides length is {len(style_guides)}")
             logger.info(f"style guide {i} is {style_guides[i][:100]}")
         else:
             messages.append(
                 {
                     "role": "assistant",
-                    "content": runpod_response,
+                    "content": ai_response,
                 }
             )
-            return runpod_response
+            yield ai_response
 
 
 # def get_updated_document():

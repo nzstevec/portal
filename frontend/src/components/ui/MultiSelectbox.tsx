@@ -7,6 +7,7 @@ interface SelectboxProps {
   value: string[];
   placeholder?: string;
   onChange: (value: string[]) => void;
+  auditActive: boolean;
 }
 
 const SelectboxContainer = styled.div`
@@ -28,7 +29,7 @@ const SelectedItemsContainer = styled.div`
   color: #999;
   width: inherit;
   white-space: nowrap;
-  overflow-x: scroll;
+  overflow-x: auto;
 
 `;
 
@@ -106,9 +107,10 @@ const MultiSelectbox: React.FC<SelectboxProps> = ({
   value,
   placeholder = 'Select an option',
   onChange,
+  auditActive,
 }) => {
   const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false);
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(true);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const currentSelection = Array.from(
@@ -146,12 +148,12 @@ const MultiSelectbox: React.FC<SelectboxProps> = ({
 
   return (
     <SelectboxContainer>
-      <LabelAndButtonContainer>
+      {/* <LabelAndButtonContainer> */}
         <Label>{label}</Label>
-        <ToggleButton onClick={toggleDropdown}>
+        {/* <ToggleButton onClick={toggleDropdown}>
           {dropdownOpen ? '˄' : '˅'}
         </ToggleButton>
-      </LabelAndButtonContainer>
+      </LabelAndButtonContainer> */}
       <SelectedItemsContainer>
         {selectedValues.length === 0 ? (
           <SelectedItem key={placeholder}>{placeholder}</SelectedItem>
@@ -169,7 +171,7 @@ const MultiSelectbox: React.FC<SelectboxProps> = ({
         value={[]}
         onChange={handleChange}
         onBlur={handleBlur}
-        open={dropdownOpen}
+        open={!auditActive} //{dropdownOpen}
       >
         {availableOptions.map((option) => (
           <option key={option} value={option}>

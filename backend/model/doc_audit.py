@@ -8,6 +8,7 @@ class DocAuditRequest(BaseModel):
     file_name: str = ''
     style_guide_file_names: str = ''
     template_name: str = ''
+    ai_provider: str = ''
 
     class Config:
         json_schema_extra = {
@@ -16,7 +17,8 @@ class DocAuditRequest(BaseModel):
                 "userid": "292e5448-b001-70cb-1582-4599f2239de5",
                 "file_name": "file1.txt", 
                 "style_guide_file_names": "section1.txt,section2.txt",
-                "template_name": "doc_audit"
+                "template_name": "doc_audit",
+                "ai_provider": "scoti"
             }
         }
 
@@ -40,7 +42,7 @@ class DocAuditResponse(BaseModel):
         }    
 
 if __name__ == '__main__':
-    create = DocAuditRequest(**{"sent": "2022-01-01T00:00:00","userid": "292e5448-b001-70cb-1582-4599f2239de5","file_name": "blah.txt,file2.txt", "style_guide_file_names": "file1.txt,file2.txt", "template_name": "doc_audit"}) 
+    create = DocAuditRequest(**{"sent": "2022-01-01T00:00:00","userid": "292e5448-b001-70cb-1582-4599f2239de5","file_name": "blah.txt,file2.txt", "style_guide_file_names": "file1.txt,file2.txt", "template_name": "doc_audit", "ai_provider": "scoti"}) 
     print(create.model_dump_json())
     response = DocAuditResponse(**{"received": "2022-01-01T00:00:00", "status": "200", "ai_response": "47 is the meaning of life"})
     print(response.model_dump_json())  

@@ -28,4 +28,5 @@ export const config = {
   postFeedbackEndpoint: '/api/feedback',
   postAiQueryEndpoint: '/api/ai-query',
   postAiDocAuditEndpoint: '/api/ai-doc-audit',
+  sseAiDocAuditEndpoint: '/api/ai-doc-audit',
 }
