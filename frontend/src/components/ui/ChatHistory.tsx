@@ -14,7 +14,7 @@ export const ChatContainer = styled.div`
   /* max-width: 80vh; */
   border-radius: 8px;
   background-color: #f9f9f9;
-  max-height: 71vh; 
+  max-height: 65vh; 
   overflow-y: auto;
   padding: 10px;
   border: 1px solid #ccc;

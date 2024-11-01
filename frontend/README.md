@@ -6,7 +6,11 @@ then run the backend
  - cd backend
  - conda activate portal-backend
  - flask run
-
+then from a browser http://localhost:5000
+ - you will see the unauthenticated landing page and will need to logon before any page displays from navbar
+ - when you login you will directed to the AWS Cognito logon page which requires a userid/pw previously provisioned in Cognito.
+ - after logon you will be redirected to the actual callback but locally you will need to change the https://next.scoti.au/... to http://localhost:5000/...
+ 
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
